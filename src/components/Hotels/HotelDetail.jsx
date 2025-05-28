@@ -32,6 +32,7 @@ const HotelDetail = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log(res.data)
     
         if (res.data?.institution?.button_one) {
           try {
