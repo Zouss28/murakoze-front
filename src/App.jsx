@@ -39,6 +39,7 @@ const App = () => {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
+        <Route path='/verified' element={<VerifyEmail />} />
         <Route path='/' element={<Layout />}>
           <Route index element={<Home />} />
           <Route path='navbar' element={<Navbar />} />
@@ -69,7 +70,6 @@ const App = () => {
           <Route path='rate' element={<Rate />} />
           <Route path='scale' element={<Scale />} />
           <Route path='last' element={<Last />} />
-          <Route path='verifyEmail' element={<VerifyEmail />} />
         </Route>
       </Routes>
     </BrowserRouter>

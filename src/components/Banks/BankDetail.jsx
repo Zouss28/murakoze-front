@@ -199,7 +199,7 @@ const BankDetail = () => {
       </div>
 
       {/* Features/Amenities Section - Responsive */}
-      <div className='flex justify-end md:-mt-32 mt-8 px-4'>
+      <div className='flex mt-8 px-4'>
         <div className='flex flex-col md:flex-row gap-8 items-start'>
           <div className='flex flex-wrap max-w-[250px] gap-3'>
             {institution.business_amenities &&

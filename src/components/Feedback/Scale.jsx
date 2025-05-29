@@ -20,7 +20,7 @@ const Scale = () => {
       answers: [
         ...answers,
         {
-          question_id: 0,
+          question_id: 1,
           scale_rating: selected,
         },
       ],
@@ -29,7 +29,7 @@ const Scale = () => {
   try {
     const token = localStorage.getItem("token");
     await axios.post(
-      "https://murakozebacked-production.up.railway.app/api/review/Q&A",
+      "https://murakozebacked-production.up.railway.app/api/review/Q&A/post",
       data,
       {
         headers: {

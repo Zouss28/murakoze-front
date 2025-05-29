@@ -223,7 +223,7 @@ const HomeserviceDetail = () => {
       </div>
 
       {/* Features/Amenities Section - Responsive */}
-      <div className='flex justify-end md:-mt-24 mt-8 px-4'>
+      <div className='flex mt-8 px-4'>
         <div className='flex flex-col md:flex-row gap-8 items-start'>
           <div className='flex flex-wrap max-w-[250px] gap-3'>
             {institution.business_amenities &&
@@ -251,7 +251,7 @@ const HomeserviceDetail = () => {
                 ))}
           </div>
 
-          <div className='flex-1 max-w-[550px]'>
+          <div className='flex-1'>
             <h3 className='font-semibold text-lg mb-2'>
               About {institution.name}
             </h3>
