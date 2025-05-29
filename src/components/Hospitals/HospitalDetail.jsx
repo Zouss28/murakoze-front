@@ -189,32 +189,6 @@ const HospitalDetail = () => {
               />
             </div>
           ))}
-        {/* Desktop Features/Amenities Layout */}
-        <div className='grid grid-cols-2 gap-4 mb-8'>
-          {institution.business_amenities &&
-            institution.business_amenities
-              .filter(
-                (item) =>
-                  ![
-                    "Free Wifi",
-                    "Free Parking",
-                    "Coffee",
-                    "Restaurant",
-                  ].includes(item.amenities.name)
-              )
-              .map((item, index) => (
-                <div key={index} className='flex items-center gap-2'>
-                  <div className='bg-[#20497F] p-2 rounded-full color-white'>
-                    <img
-                      src={`${API_BASE_URL}${item.amenities.icon}`}
-                      alt={item.amenities.name}
-                      className='w-5 h-5 object-contain filter invert brightness-0'
-                    />
-                  </div>
-                  <span>{item.amenities.name}</span>
-                </div>
-              ))}
-        </div>
       </div>
 
       {/* Dynamic Buttons */}
@@ -245,30 +219,63 @@ const HospitalDetail = () => {
         )}
       </div>
 
-      <div className='flex justify-end -mt-64'>
-        <div className='w-[550px] lg:pl-4'>
-          <h3 className='font-medium mb-2'>About {institution.name}</h3>
-          <p className='text-gray-700'>
-            {institution.description || "No description available."}
-          </p>
+      {/* Features/Amenities Section - Responsive */}
+      <div className='flex justify-end md:-mt-32 mt-8 px-4'>
+        <div className='flex flex-col md:flex-row gap-8 items-start'>
+          <div className='flex flex-wrap max-w-[250px] gap-3'>
+            {institution.business_amenities &&
+              institution.business_amenities
+                .filter(
+                  (item) =>
+                    ![
+                      "Free Wifi",
+                      "Free Parking",
+                      "Coffee",
+                      "Restaurant",
+                    ].includes(item.amenities.name)
+                )
+                .map((item, index) => (
+                  <div key={index} className='flex items-center gap-2'>
+                    <div className='bg-[#20497F] p-2 rounded-full'>
+                      <img
+                        src={`${API_BASE_URL}${item.amenities.icon}`}
+                        alt={item.amenities.name}
+                        className='w-4 h-4 object-contain filter invert brightness-0'
+                      />
+                    </div>
+                    <span className=''>{item.amenities.name}</span>
+                  </div>
+                ))}
+          </div>
+
+          <div className='flex-1 max-w-[550px]'>
+            <h3 className='font-semibold text-lg mb-2'>
+              About {institution.name}
+            </h3>
+            <p className=''>
+              {institution.description || "No description available."}
+            </p>
+          </div>
         </div>
       </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 md:mt-32'>
-        {/* Left Column - Location with dynamic coordinates */}
 
-        <iframe
-          src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`}
-          width='550'
-          height='450'
-          style={{ border: 0 }}
-          allowFullScreen=''
-          loading='lazy'
-          referrerPolicy='no-referrer-when-downgrade'
-        ></iframe>
+      {/* iframe with working hours */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 md:mt-32 px-4'>
+        {/* Left Column - Map */}
+        <div className='w-full'>
+          <iframe
+            src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`}
+            className='w-full h-[300px] md:h-[450px]'
+            style={{ border: 0 }}
+            allowFullScreen=''
+            loading='lazy'
+            referrerPolicy='no-referrer-when-downgrade'
+          ></iframe>
+        </div>
 
-        {/* Middle Column - Dynamic Opening Hours */}
-        <div className='ml-16'>
-          <h3 className='font-medium mb-2 '>Our opening hours</h3>
+        {/* Middle Column - Opening Hours */}
+        <div className='ml-0 md:ml-28'>
+          <h3 className='font-medium mb-2'>Our opening hours</h3>
           <div className='space-y-3 md:mr-16'>
             {Object.entries(workingHours).map(([day, hours]) => (
               <div key={day} className='flex justify-between'>
@@ -293,36 +300,19 @@ const HospitalDetail = () => {
           <div className='flex gap-1 mb-4'>{renderStars(avgRating)}</div>
 
           <div className='space-y-2'>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>5 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[90%]'></div>
+            {[5, 4, 3, 2, 1].map((star, i) => (
+              <div key={i} className='flex items-center gap-2'>
+                <span className='w-12'>
+                  {star} star{star > 1 && "s"}
+                </span>
+                <div className='flex-1 bg-gray-200 rounded-full h-2'>
+                  <div
+                    className='bg-[#20497F] h-2 rounded-full'
+                    style={{ width: `${[90, 40, 30, 20, 5][i]}%` }}
+                  ></div>
+                </div>
               </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>4 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[40%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>3 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[30%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>2 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[20%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>1 star</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[5%]'></div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
