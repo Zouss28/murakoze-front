@@ -91,6 +91,7 @@ const Navbar = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log("Institution view response:", res.data);
       } catch (err) {
         console.error("Failed to register institution view", err);
       }

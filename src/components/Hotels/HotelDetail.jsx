@@ -74,7 +74,7 @@ const HotelDetail = () => {
   };
   
   // Base URL for image paths
-  const API_BASE_URL = "https:/murakozebacked-production.up.railway.app/";
+  const API_BASE_URL = "https://murakozebacked-production.up.railway.app/";
 
   if (loading) return <div className="w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center">Loading hotel details...</div>;
   if (error) return <div className="w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center text-red-500">{error}</div>;
