@@ -6,6 +6,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import axios from "axios";
+import { IoMdClose } from "react-icons/io";
 
 const HospitalDetail = () => {
   const { id } = useParams();
@@ -56,7 +57,6 @@ const HospitalDetail = () => {
         setInstitution(res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
-        setError("Failed to load institutions");
       } finally {
         setLoading(false);
       }
@@ -325,7 +325,7 @@ const HospitalDetail = () => {
               onClick={closeServicesPopup}
               className='absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-700 hover:text-gray-900'
             >
-              <X size={24} />
+              <IoMdClose size={24} />
             </button>
 
             {buttonTwo.sections.map((section, sectionIndex) => (

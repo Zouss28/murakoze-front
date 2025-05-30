@@ -28,13 +28,6 @@ const Service = () => {
         {/* Service options grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8'>
           {institution.services?.map((service) => (
-            // <Link key={service.id} to='/feedback'>
-            //   <div className='bg-[#20497F] text-white rounded-lg px-6 py-10 cursor-pointer hover:bg-blue-700 transition-colors w-full md:w-80 h-32 flex items-center justify-center mx-auto'>
-            //     <div className='text-base md:text-lg font-medium'>
-            //       {service.name}
-            //     </div>
-            //   </div>
-            // </Link>
             <Link
               key={service.id}
               to='/feedback'

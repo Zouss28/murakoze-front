@@ -56,11 +56,10 @@ const RestaurentDetail = () => {
             console.error("Error parsing button_two", e);
           }
         }
-
         setInstitution(res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
-        setError("Failed to load institutions");
+        // setError("Failed to load institutions");
       } finally {
         setLoading(false);
       }

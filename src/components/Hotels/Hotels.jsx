@@ -60,7 +60,6 @@ const Hotels = () => {
       setCurrentPage(1); // Reset to page 1 when changing filters
     } catch (err) {
       console.error("Error fetching institutions", err);
-      setError("Failed to load institutions");
     } finally {
       setLoading(false);
     }

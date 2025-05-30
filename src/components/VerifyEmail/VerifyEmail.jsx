@@ -35,6 +35,7 @@ const VerifyEmail = () => {
         if (!response.ok) {
           throw new Error("Verification failed on server");
         }
+        console.log("Everything works:", accessToken);
 
         localStorage.setItem("token", accessToken);
         setVerificationStatus("success");

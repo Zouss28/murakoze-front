@@ -50,19 +50,32 @@ const Scale = () => {
   }
   };  
 
-  const renderNumber = (num, color) => (
-    <div
-      key={num}
-      onClick={() => setSelected(Number(num))}
-      className={`w-12 h-12 md:w-16 md:h-16 rounded-full border-4 flex items-center justify-center cursor-pointer transition-colors ${
-        selected === Number(num) ? `bg-${color}-100` : ""
-      } border-${color}-600`}
-    >
-      <div className={`text-${color}-600 text-base md:text-xl font-bold`}>
-        {num}
+  const renderNumber = (num, color) => {
+    const colors = {
+      red: { bg: "#fee2e2", border: "#dc2626", text: "#dc2626" },
+      yellow: { bg: "#fef3c7", border: "#d97706", text: "#d97706" },
+      green: { bg: "#dcfce7", border: "#16a34a", text: "#16a34a" },
+    };
+
+    return (
+      <div
+        key={num}
+        onClick={() => setSelected(Number(num))}
+        style={{
+          backgroundColor: selected === Number(num) ? colors[color].bg : "",
+          borderColor: colors[color].border,
+        }}
+        className={`w-12 h-12 md:w-16 md:h-16 rounded-full border-4 flex items-center justify-center cursor-pointer transition-colors`}
+      >
+        <div
+          style={{ color: colors[color].text }}
+          className={`text-base md:text-xl font-bold`}
+        >
+          {num}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className='min-h-screen flex items-center justify-center p-4'>

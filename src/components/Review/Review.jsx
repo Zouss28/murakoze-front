@@ -48,6 +48,7 @@ const Review = () => {
         Authorization: `Bearer ${token}`,
       },
     })
+      
       .then((response) => {
         const { first_name, last_name } = response.data.user;
         setUserData({ first_name, last_name });
@@ -132,7 +133,9 @@ const Review = () => {
           {/* Review Cards */}
           {!loading && !error && reviews.length > 0 && (
             <div className='space-y-6'>
+              
               {reviews.map((review, index) => (
+          
                 <div
                   key={review.id || index}
                   className='bg-blue-50 p-6 rounded-lg'
@@ -207,3 +210,5 @@ const Review = () => {
 };
 
 export default Review;
+
+

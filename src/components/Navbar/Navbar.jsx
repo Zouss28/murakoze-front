@@ -1,14 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, User, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import logo from '../../assets/img/logo.jpeg';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Search, ChevronDown, User, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import logo from "../../assets/img/logo.jpeg";
+import { useParams } from "react-router-dom";
 
 const Navbar = () => {
- 
-  const {id} = useParams ();
+  const { id } = useParams();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -17,8 +16,7 @@ const Navbar = () => {
   // Search functionality states
   const [showInput, setShowInput] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [institutions, setInstitutions] = useState([]);
-  const [filteredInstitutions, setFilteredInstitutions] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showResults, setShowResults] = useState(false);
@@ -28,78 +26,108 @@ const Navbar = () => {
     if (showInput) {
       setSearchQuery("");
       setShowResults(false);
+      setFilteredCategories([]);
+      setError(null);
     }
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
+    setError(null);
 
     if (query.trim() === "") {
-      setFilteredInstitutions([]);
+      setFilteredCategories([]);
       setShowResults(false);
-    } else {
-      const filtered = institutions.filter((institution) =>
-        institution.name.toLowerCase().includes(query.toLowerCase())
+      return;
+    }
+
+    
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `https://murakozebacked-production.up.railway.app/api/search/categories?q=${encodeURIComponent(
+          query
+        )}&page=1&pageSize=5`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
       );
-      setFilteredInstitutions(filtered);
+
+      let categoriesData = [];
+      if (res.data && res.data.data && Array.isArray(res.data.data)) {
+        categoriesData = res.data.data;
+      } else if (
+        res.data &&
+        res.data.categories &&
+        Array.isArray(res.data.categories)
+      ) {
+        categoriesData = res.data.categories;
+      } else if (res.data && Array.isArray(res.data)) {
+        categoriesData = res.data;
+      }
+
+      setFilteredCategories(categoriesData);
       setShowResults(true);
+    } catch (err) {
+      console.error("Error searching categories:", err);
+      setError("Failed to search categories");
+      setFilteredCategories([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleInstitutionClick = (institution) => {
-    navigate(`/institutions/${institution.id}`);
-    setShowResults(false);
-    setSearchQuery("");
-  };
-
-  // Fetch institutions
-  useEffect(() => {
-    const fetchInstitutions = async () => {
+  const handleKeyPress = async (e) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      setShowResults(false);
       setLoading(true);
+      setError(null);
+
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `https://murakozebacked-production.up.railway.app/api/review/institution`,
+          `https://murakozebacked-production.up.railway.app/api/search/institutions?q=${encodeURIComponent(
+            searchQuery
+          )}&page=1&pageSize=5`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
           }
         );
 
-        setInstitutions(res.data?.institutions || []);
+        const institutionsData = res.data?.data || [];
+
+        if (institutionsData.length > 0) {
+          navigate(`/institutions/${institutionsData[0].id}`);
+          setSearchQuery("");
+          setShowInput(false);
+        } else {
+          setError("No matching institutions found");
+          setTimeout(() => setError(null), 3000);
+        }
       } catch (err) {
-        console.error("Error fetching institutions", err);
-        setError("Failed to load institutions");
+        console.error("Error searching institutions:", err);
+        setError(
+          err.response?.data?.message || "Failed to search institutions"
+        );
+        setTimeout(() => setError(null), 3000);
       } finally {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    fetchInstitutions();
-  }, []);
-
-  useEffect(() => {
-    if (!id) return;
-    const fetchInstitutionView = async () => {
-      const token = localStorage.getItem("token");
-      console.log("fetchInstitutionView, id:", id);
-      
-      try {
-        const res = await axios.get(
-          `https://murakozebacked-production.up.railway.app/api/institutions/${id}/view`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        console.log("Institution view response:", res.data);
-      } catch (err) {
-        console.error("Failed to register institution view", err);
-      }
-    };
-
-    fetchInstitutionView();
-  }, [id]);
-  
+  const handleCategoryClick = (category) => {
+    setSearchQuery(category.name);
+    setShowResults(false);
+  };
 
   const navItems = [
     {
@@ -200,6 +228,40 @@ const Navbar = () => {
     };
   }, [showResults]);
 
+  const renderSearchResults = () => {
+    if (loading) {
+      return <div className='px-4 py-2 text-sm text-gray-500'>Loading...</div>;
+    }
+
+    if (error) {
+      return <div className='px-4 py-2 text-sm text-red-500'>{error}</div>;
+    }
+
+    // Only show categories in dropdown, never institutions
+    if (filteredCategories.length > 0) {
+      return filteredCategories.map((category) => (
+        <div
+          key={category._id || category.id}
+          className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer border-b border-gray-50 last:border-b-0'
+          onClick={() => handleCategoryClick(category)}
+        >
+          <div className='font-medium'>{category.name}</div>
+          {category.description && (
+            <div className='text-xs text-gray-500 mt-1'>
+              {category.description}
+            </div>
+          )}
+        </div>
+      ));
+    } else {
+      return (
+        <div className='px-4 py-2 text-sm text-gray-500'>
+          No categories found
+        </div>
+      );
+    }
+  };
+
   return (
     <nav className='w-full bg-white shadow-sm relative'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -213,7 +275,7 @@ const Navbar = () => {
           <div className='hidden sm:ml-6 sm:flex sm:items-center space-x-2 search-container'>
             <button
               onClick={toggleInput}
-              className='p-2 bg-[#20497F] text-white rounded'
+              className='p-2 bg-[#20497F] text-white rounded hover:bg-blue-800 transition-colors'
             >
               {showInput ? (
                 <X className='h-5 w-5' />
@@ -226,42 +288,28 @@ const Navbar = () => {
               <div className='relative'>
                 <input
                   type='text'
-                  placeholder='Search institutions...'
+                  placeholder='Search institutions... '
                   className='border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64'
                   value={searchQuery}
                   onChange={handleSearchChange}
+                  onKeyPress={handleKeyPress}
+                  autoFocus
                 />
 
-                {showResults && filteredInstitutions.length > 0 && (
-                  <div className='absolute left-0 mt-1 w-64 bg-white rounded-md shadow-lg z-50 max-h-60 overflow-y-auto'>
-                    {loading ? (
-                      <div className='px-4 py-2 text-sm text-gray-500'>
-                        Loading...
-                      </div>
-                    ) : (
-                      filteredInstitutions.map((institution) => (
-                        <div
-                          key={institution._id}
-                          className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer'
-                          onClick={() => handleInstitutionClick(institution)}
-                        >
-                          {institution.name}
-                        </div>
-                      ))
-                    )}
+                {showResults && searchQuery.trim() !== "" && (
+                  <div className='absolute left-0 mt-1 w-80 bg-white rounded-md shadow-lg z-50 max-h-60 overflow-y-auto border border-gray-200'>
+                    {renderSearchResults()}
                   </div>
                 )}
 
-                {showResults &&
-                  searchQuery &&
-                  filteredInstitutions.length === 0 &&
-                  !loading && (
-                    <div className='absolute left-0 mt-1 w-64 bg-white rounded-md shadow-lg z-50'>
-                      <div className='px-4 py-2 text-sm text-gray-500'>
-                        No institutions found
-                      </div>
+                {/* Show error message below input if exists */}
+                {error && !showResults && (
+                  <div className='absolute left-0 mt-1 w-80 bg-white rounded-md shadow-lg z-50 border border-gray-200'>
+                    <div className='px-4 py-2 text-sm text-red-500'>
+                      {error}
                     </div>
-                  )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -270,7 +318,7 @@ const Navbar = () => {
             {navItems.map((item, index) => (
               <div key={index} className='relative group'>
                 <button
-                  className='px-3 py-2 text-sm font-medium text-gray-700 flex items-center hover:text-[#0046AD]'
+                  className='px-3 py-2 text-sm font-medium text-gray-700 flex items-center hover:text-[#0046AD] transition-colors'
                   onClick={() => toggleDropdown(index)}
                 >
                   {item.title}
@@ -279,12 +327,12 @@ const Navbar = () => {
                 {item.hasDropdown &&
                   activeDropdown === index &&
                   item.dropdownItems.length > 0 && (
-                    <div className='absolute left-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 py-1'>
+                    <div className='absolute left-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 py-1 border border-gray-200'>
                       {item.dropdownItems.map((dropdownItem, dropdownIndex) => (
                         <Link
                           key={dropdownIndex}
                           to={dropdownItem.path}
-                          className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                          className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
                         >
                           {dropdownItem.label}
                         </Link>
@@ -298,14 +346,14 @@ const Navbar = () => {
           <div className='hidden sm:ml-6 sm:flex sm:items-center space-x-3'>
             <Link
               to='/review'
-              className='px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium'
+              className='px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium transition-colors'
             >
               Write a Review
             </Link>
             {isLoggedIn ? (
               <div className='relative'>
                 <button
-                  className='flex items-center px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium'
+                  className='flex items-center px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium transition-colors'
                   onClick={() => toggleDropdown("profile")}
                 >
                   <User className='mr-2 h-4 w-4' />
@@ -313,16 +361,16 @@ const Navbar = () => {
                   <ChevronDown className='ml-1 h-4 w-4' />
                 </button>
                 {activeDropdown === "profile" && (
-                  <div className='absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 py-1'>
+                  <div className='absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 py-1 border border-gray-200'>
                     <Link
                       to='/overview'
-                      className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                      className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
                     >
                       Profile
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className='block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                      className='block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors'
                     >
                       Logout
                     </button>
@@ -333,13 +381,13 @@ const Navbar = () => {
               <>
                 <Link
                   to='/login'
-                  className='px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium'
+                  className='px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium transition-colors'
                 >
                   Log In
                 </Link>
                 <Link
                   to='/signup'
-                  className='px-4 py-2 bg-[#20497F] text-white rounded hover:bg-blue-700 text-sm font-medium'
+                  className='px-4 py-2 bg-[#20497F] text-white rounded hover:bg-blue-700 text-sm font-medium transition-colors'
                 >
                   Sign Up
                 </Link>
@@ -371,6 +419,7 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Mobile Menu */}
       <div className={`sm:hidden ${mobileMenuOpen ? "block" : "hidden"}`}>
         <div className='px-2 pt-2 pb-3 space-y-1'>
           {/* Mobile search bar */}
@@ -378,19 +427,22 @@ const Navbar = () => {
             <div className='flex items-center border border-gray-300 rounded overflow-hidden'>
               <input
                 type='text'
-                placeholder='Search institutions...'
+                placeholder='Search institutions... (Press Enter)'
                 className='flex-grow px-3 py-2 focus:outline-none'
                 value={searchQuery}
                 onChange={handleSearchChange}
+                onKeyPress={handleKeyPress}
               />
               <button
                 onClick={() => {
                   if (searchQuery) {
                     setSearchQuery("");
                     setShowResults(false);
+                    setFilteredCategories([]);
+                    setError(null);
                   }
                 }}
-                className='px-3 py-2 bg-gray-100'
+                className='px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors'
               >
                 {searchQuery ? (
                   <X className='h-4 w-4' />
@@ -400,42 +452,24 @@ const Navbar = () => {
               </button>
             </div>
 
-            {showResults && filteredInstitutions.length > 0 && (
-              <div className='mt-1 bg-white rounded-md shadow-lg z-50 max-h-60 overflow-y-auto'>
-                {loading ? (
-                  <div className='px-4 py-2 text-sm text-gray-500'>
-                    Loading...
-                  </div>
-                ) : (
-                  filteredInstitutions.map((institution) => (
-                    <div
-                      key={institution._id}
-                      className='px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer'
-                      onClick={() => handleInstitutionClick(institution)}
-                    >
-                      {institution.name}
-                    </div>
-                  ))
-                )}
+            {showResults && searchQuery.trim() !== "" && (
+              <div className='mt-1 bg-white rounded-md shadow-lg z-50 max-h-60 overflow-y-auto border border-gray-200'>
+                {renderSearchResults()}
               </div>
             )}
 
-            {showResults &&
-              searchQuery &&
-              filteredInstitutions.length === 0 &&
-              !loading && (
-                <div className='mt-1 bg-white rounded-md shadow-lg z-50'>
-                  <div className='px-4 py-2 text-sm text-gray-500'>
-                    No institutions found
-                  </div>
-                </div>
-              )}
+            {/* Show error message for mobile */}
+            {error && !showResults && (
+              <div className='mt-1 bg-white rounded-md shadow-lg z-50 border border-gray-200'>
+                <div className='px-4 py-2 text-sm text-red-500'>{error}</div>
+              </div>
+            )}
           </div>
 
           {navItems.map((item, index) => (
             <div key={index}>
               <button
-                className='w-full text-left px-3 py-2 text-base font-medium text-gray-700 flex items-center justify-between hover:bg-gray-50'
+                className='w-full text-left px-3 py-2 text-base font-medium text-gray-700 flex items-center justify-between hover:bg-gray-50 transition-colors'
                 onClick={() => toggleDropdown(index)}
               >
                 {item.title}
@@ -447,7 +481,7 @@ const Navbar = () => {
                     <Link
                       key={dropdownIndex}
                       to={dropdownItem.path}
-                      className='block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                      className='block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors'
                     >
                       {dropdownItem.label}
                     </Link>
@@ -461,7 +495,7 @@ const Navbar = () => {
             <div className='flex items-center px-5 space-y-3 flex-col'>
               <Link
                 to='/review'
-                className='w-full px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium text-center'
+                className='w-full px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium text-center transition-colors'
               >
                 Write a Review
               </Link>
@@ -469,13 +503,13 @@ const Navbar = () => {
                 <>
                   <Link
                     to='/profile'
-                    className='w-full px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium text-center'
+                    className='w-full px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium text-center transition-colors'
                   >
                     My Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className='w-full px-4 py-2 bg-[#20497F] text-white rounded hover:bg-blue-700 text-sm font-medium text-center'
+                    className='w-full px-4 py-2 bg-[#20497F] text-white rounded hover:bg-blue-700 text-sm font-medium text-center transition-colors'
                   >
                     Logout
                   </button>
@@ -484,13 +518,13 @@ const Navbar = () => {
                 <>
                   <Link
                     to='/login'
-                    className='w-full px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium text-center'
+                    className='w-full px-4 py-2 text-[#0046AD] border border-[#0046AD] rounded hover:bg-blue-50 text-sm font-medium text-center transition-colors'
                   >
                     Log In
                   </Link>
                   <Link
                     to='/signup'
-                    className='w-full px-4 py-2 bg-[#20497F] text-white rounded hover:bg-blue-700 text-sm font-medium text-center'
+                    className='w-full px-4 py-2 bg-[#20497F] text-white rounded hover:bg-blue-700 text-sm font-medium text-center transition-colors'
                   >
                     Sign Up
                   </Link>

@@ -57,7 +57,6 @@ const BankDetail = () => {
         setInstitution(res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
-        setError("Failed to load institutions");
       } finally {
         setLoading(false);
       }
@@ -227,7 +226,7 @@ const BankDetail = () => {
                 ))}
           </div>
 
-          <div className='flex-1 max-w-[550px]'>
+          <div className='flex-1 '>
             <h3 className='font-semibold text-lg mb-2'>
               About {institution.name}
             </h3>

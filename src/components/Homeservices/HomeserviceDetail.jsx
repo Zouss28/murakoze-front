@@ -59,7 +59,6 @@ const HomeserviceDetail = () => {
         setInstitution(res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
-        setError("Failed to load institutions");
       } finally {
         setLoading(false);
       }
