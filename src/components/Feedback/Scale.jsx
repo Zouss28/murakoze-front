@@ -5,12 +5,14 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
 const Scale = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { service, institution, answers = [], token } = location.state || {};
 
   const [selected, setSelected] = useState(null);
+
 
   const handleSubmit = async () => {
     if (selected === null) return;
@@ -20,36 +22,44 @@ const Scale = () => {
       answers: [
         ...answers,
         {
-          question_id: 1,
+          question_id: service.id,
           scale_rating: selected,
         },
       ],
     };
 
-  try {
-    const token = localStorage.getItem("token");
-    await axios.post(
-      "https://murakozebacked-production.up.railway.app/api/review/Q&A/post",
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  
-    toast.success("Feedback submitted successfully!");
-    console.log(data);
-    setTimeout(() => {
-      navigate("/last");
-    }, 1500);
-  } catch (error) {
-    console.error("Error submitting scale:", error);
-    toast.error("Failed to submit feedback");
-  }
-  };  
+    try {
+      const token = localStorage.getItem("token");
+      await axios
+        .post(
+          "https://murakozebacked-production.up.railway.app/api/review/Q&A/post",
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
 
+      toast.success("Feedback submitted successfully!");
+      console.log(data);
+      setTimeout(() => {
+        navigate("/last", {
+          state: { institution }, 
+        });
+      }, 1500);
+    } catch (error) {
+      console.error("Error submitting scale:", error);
+      toast.error("Failed to submit feedback");
+    }
+  };
   const renderNumber = (num, color) => {
     const colors = {
       red: { bg: "#fee2e2", border: "#dc2626", text: "#dc2626" },

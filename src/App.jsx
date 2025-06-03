@@ -32,6 +32,7 @@ import Rate from './components/Feedback/Rate';
 import Scale from './components/Feedback/Scale';
 import Last from './components/Feedback/Last';
 import VerifyEmail from './components/VerifyEmail/VerifyEmail';
+import Detailsinstitution from './components/Institutions/Detailsinstitution';
 
 
 const App = () => {
@@ -62,7 +63,7 @@ const App = () => {
           <Route path='detail' element={<Detail />} />
           <Route path='overview' element={<Overview />} />
           <Route path='profile' element={<EditProfile />} />
-          <Route path='postreview/:id' element={<Postreview />} />
+          <Route path='/postreview/:id' element={<Postreview />} />
           <Route path='view' element={<Review />} />
           <Route path='Reviews' element={<Reviews />} />
           <Route path='feedback' element={<Feedback />} />
@@ -70,6 +71,7 @@ const App = () => {
           <Route path='rate' element={<Rate />} />
           <Route path='scale' element={<Scale />} />
           <Route path='last' element={<Last />} />
+          <Route path='/detailsinstitution' element={<Detailsinstitution />} />
         </Route>
       </Routes>
     </BrowserRouter>

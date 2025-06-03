@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Search, ChevronDown, User, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -42,15 +41,17 @@ const Navbar = () => {
       return;
     }
 
-    
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `https://murakozebacked-production.up.railway.app/api/search/categories?q=${encodeURIComponent(
-          query
-        )}&page=1&pageSize=5`,
+        `https://murakozebacked-production.up.railway.app/api/search/categories`,
         {
+          params: {
+            q: query,
+            page: 1,
+            pageSize: 5,
+          },
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -82,19 +83,22 @@ const Navbar = () => {
     }
   };
 
+
   const handleKeyPress = async (e) => {
     if (e.key === "Enter" && searchQuery.trim()) {
-      setShowResults(false);
       setLoading(true);
       setError(null);
 
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `https://murakozebacked-production.up.railway.app/api/search/institutions?q=${encodeURIComponent(
-            searchQuery
-          )}&page=1&pageSize=5`,
+          "https://murakozebacked-production.up.railway.app/api/search/institutions",
           {
+            params: {
+              q: searchQuery,
+              page: 1,
+              pageSize: 5,
+            },
             headers: {
               Authorization: `Bearer ${token}`,
               Accept: "application/json",
@@ -105,9 +109,10 @@ const Navbar = () => {
         const institutionsData = res.data?.data || [];
 
         if (institutionsData.length > 0) {
-          navigate(`/institutions/${institutionsData[0].id}`);
-          setSearchQuery("");
-          setShowInput(false);
+          navigate("/detailsinstitution", {
+            state: { institutions: institutionsData },
+          });
+          setSearchQuery(""); // Clear search bar
         } else {
           setError("No matching institutions found");
           setTimeout(() => setError(null), 3000);
@@ -123,7 +128,6 @@ const Navbar = () => {
       }
     }
   };
-
   const handleCategoryClick = (category) => {
     setSearchQuery(category.name);
     setShowResults(false);

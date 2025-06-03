@@ -184,7 +184,7 @@ const HospitalDetail = () => {
             <div key={`placeholder-${index}`}>
               <img
                 src='/api/placeholder/400/300'
-                alt='Hotel Room'
+                alt='hospital'
                 className='w-full h-64 object-cover rounded-lg'
               />
             </div>
@@ -260,7 +260,7 @@ const HospitalDetail = () => {
       </div>
 
       {/* iframe with working hours */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 md:mt-32 px-4'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 px-4'>
         {/* Left Column - Map */}
         <div className='w-full'>
           <iframe

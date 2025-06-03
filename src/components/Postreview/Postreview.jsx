@@ -4,12 +4,12 @@ import { Star } from 'lucide-react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useParams } from "react-router-dom";
 
-
-const Postreview = ({ institutionId }) => {
+const Postreview = () =>{
   const [imagePreview, setImagePreview] = useState(null);
-
-  const ip = import.meta.env.VITE_IP;
+ 
+  const { id } = useParams();
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -40,7 +40,7 @@ const Postreview = ({ institutionId }) => {
       formData.append('profile_image', selectedFile);
   
       const res = await axios.post(
-        `https://murakozebacked-production.up.railway.app/api/review/3`,
+        `https://murakozebacked-production.up.railway.app/api/review/${id}`,
         formData,
         {
           headers: {
@@ -171,3 +171,5 @@ const Postreview = ({ institutionId }) => {
 };
 
 export default Postreview;
+
+

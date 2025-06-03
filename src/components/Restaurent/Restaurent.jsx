@@ -7,18 +7,14 @@ import { Link } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
 
 const Restaurent = () => {
+  // NEW: State for selected filters
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [selectedPrice, setSelectedPrice] = useState("");
+
   // fethch institutions by price
   const fetchInstitutionsByPrice = (price) => {
-    fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/${id}?price=${price}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Filtered results:", data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    // MODIFIED: Update selected price state instead of direct API call
+    setSelectedPrice(price);
   };
 
   const [amenities, setAmenities] = useState([]);
@@ -57,9 +53,57 @@ const Restaurent = () => {
       setCurrentPage(1); // Reset to page 1 when changing filters
     } catch (err) {
       console.error("Error fetching institutions", err);
-      setError("Failed to load institutions");
+      // setError("Failed to load institutions");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // NEW: Function to apply filters
+  const applyFilters = async () => {
+    if (selectedAmenities.length === 0 && !selectedPrice) {
+      fetchInstitutions(); // No filters, fetch all
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      let endpoint = `https://murakozebacked-production.up.railway.app/api/search/${id}?`;
+
+      // Add price filter if selected
+      if (selectedPrice) {
+        endpoint += `price=${selectedPrice}&`;
+      }
+
+      // Add amenity filters if selected
+      if (selectedAmenities.length > 0) {
+        endpoint += `amenities=${selectedAmenities.join(",")}&`;
+      }
+
+      // Remove trailing & or ?
+      endpoint = endpoint.replace(/[&?]$/, "");
+
+      const res = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setInstitutions(res.data?.institutions || []);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("Error applying filters", err);
+      setError("Failed to apply filters");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // NEW: Handle amenity checkbox change
+  const handleAmenityChange = (amenityId, checked) => {
+    if (checked) {
+      setSelectedAmenities([...selectedAmenities, amenityId]);
+    } else {
+      setSelectedAmenities(selectedAmenities.filter((id) => id !== amenityId));
     }
   };
 
@@ -79,6 +123,11 @@ const Restaurent = () => {
         console.error("Error fetching amenities:", error);
       });
   }, []);
+
+  // NEW: Apply filters whenever selectedAmenities or selectedPrice changes
+  useEffect(() => {
+    applyFilters();
+  }, [selectedAmenities, selectedPrice]);
 
   // Calculate pagination indexes
   const indexOfLastInstitution = currentPage * institutionsPerPage;
@@ -137,7 +186,11 @@ const Restaurent = () => {
                   <label
                     key={price}
                     onClick={() => fetchInstitutionsByPrice(price)}
-                    className='w-full text-center py-2 border-r last:border-none text-gray-600 hover:bg-[#20497F] hover:text-white rounded cursor-pointer'
+                    className={`w-full text-center py-2 border-r last:border-none cursor-pointer ${
+                      selectedPrice === price
+                        ? "bg-[#20497F] text-white"
+                        : "text-gray-600 hover:bg-[#20497F] hover:text-white"
+                    } rounded`}
                   >
                     {price}
                   </label>
@@ -153,6 +206,10 @@ const Restaurent = () => {
                       type='checkbox'
                       id={`amenity-${amenity.id}`}
                       className='mr-2'
+                      checked={selectedAmenities.includes(amenity.id)}
+                      onChange={(e) =>
+                        handleAmenityChange(amenity.id, e.target.checked)
+                      }
                     />
                     <label htmlFor={`amenity-${amenity.id}`}>
                       {amenity.name}
@@ -209,11 +266,15 @@ const Restaurent = () => {
               >
                 <input
                   type='checkbox'
-                  id={`amenity-${amenity.id}`}
+                  id={`amenity-main-${amenity.id}`}
                   className='mr-1'
+                  checked={selectedAmenities.includes(amenity.id)}
+                  onChange={(e) =>
+                    handleAmenityChange(amenity.id, e.target.checked)
+                  }
                 />
                 <label
-                  htmlFor={`amenity-${amenity.id}`}
+                  htmlFor={`amenity-main-${amenity.id}`}
                   className='font-medium'
                 >
                   {amenity.name}

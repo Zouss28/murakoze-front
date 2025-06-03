@@ -7,27 +7,23 @@ import { Link } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
 
 const Hospital = () => {
+  // NEW: State for selected filters
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [selectedPrice, setSelectedPrice] = useState("");
+
   // fethch institutions by price
   const fetchInstitutionsByPrice = (price) => {
-    fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/${id}?price=${price}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Filtered results:", data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    // MODIFIED: Update selected price state instead of direct API call
+    setSelectedPrice(price);
   };
 
   const [amenities, setAmenities] = useState([]);
   const id = 4;
   const [open, setOpen] = useState(false);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState("recommended");
   const [filterLabel, setFilterLabel] = useState("Recommended");
@@ -53,14 +49,60 @@ const Hospital = () => {
       const res = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(res.data);
       setInstitutions(res.data?.institutions || []);
       setCurrentPage(1); // Reset to page 1 when changing filters
     } catch (err) {
-      console.error("Error fetching hospital", err);
-      setError("Failed to load hospitals");
+      console.error("Error fetching institutions", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // NEW: Function to apply filters
+  const applyFilters = async () => {
+    if (selectedAmenities.length === 0 && !selectedPrice) {
+      fetchInstitutions(); // No filters, fetch all
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      let endpoint = `https://murakozebacked-production.up.railway.app/api/search/${id}?`;
+
+      // Add price filter if selected
+      if (selectedPrice) {
+        endpoint += `price=${selectedPrice}&`;
+      }
+
+      // Add amenity filters if selected
+      if (selectedAmenities.length > 0) {
+        endpoint += `amenities=${selectedAmenities.join(",")}&`;
+      }
+
+      // Remove trailing & or ?
+      endpoint = endpoint.replace(/[&?]$/, "");
+
+      const res = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setInstitutions(res.data?.institutions || []);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("Error applying filters", err);
+      setError("Failed to apply filters");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // NEW: Handle amenity checkbox change
+  const handleAmenityChange = (amenityId, checked) => {
+    if (checked) {
+      setSelectedAmenities([...selectedAmenities, amenityId]);
+    } else {
+      setSelectedAmenities(selectedAmenities.filter((id) => id !== amenityId));
     }
   };
 
@@ -80,6 +122,11 @@ const Hospital = () => {
         console.error("Error fetching amenities:", error);
       });
   }, []);
+
+  // NEW: Apply filters whenever selectedAmenities or selectedPrice changes
+  useEffect(() => {
+    applyFilters();
+  }, [selectedAmenities, selectedPrice]);
 
   // Calculate pagination indexes
   const indexOfLastInstitution = currentPage * institutionsPerPage;
@@ -129,6 +176,7 @@ const Hospital = () => {
       <div className='fixed inset-0 z-50 flex ml-10 mt-16'>
         <div className='bg-white shadow-lg w-64 h-[90vh] flex flex-col'>
           <div className='p-4 space-y-6 overflow-y-auto flex-1'>
+            {/* filter section  */}
             <h2 className='text-lg font-semibold'>Filters</h2>
             <div className='space-y-2'>
               <h3 className='font-medium'>Price</h3>
@@ -137,7 +185,11 @@ const Hospital = () => {
                   <label
                     key={price}
                     onClick={() => fetchInstitutionsByPrice(price)}
-                    className='w-full text-center py-2 border-r last:border-none text-gray-600 hover:bg-[#20497F] hover:text-white rounded cursor-pointer'
+                    className={`w-full text-center py-2 border-r last:border-none cursor-pointer ${
+                      selectedPrice === price
+                        ? "bg-[#20497F] text-white"
+                        : "text-gray-600 hover:bg-[#20497F] hover:text-white"
+                    } rounded`}
                   >
                     {price}
                   </label>
@@ -153,6 +205,10 @@ const Hospital = () => {
                       type='checkbox'
                       id={`amenity-${amenity.id}`}
                       className='mr-2'
+                      checked={selectedAmenities.includes(amenity.id)}
+                      onChange={(e) =>
+                        handleAmenityChange(amenity.id, e.target.checked)
+                      }
                     />
                     <label htmlFor={`amenity-${amenity.id}`}>
                       {amenity.name}
@@ -195,9 +251,11 @@ const Hospital = () => {
           <IoMdMenu />
           <span className='font-medium'>All</span>
         </button>
+
         <button className='flex items-center gap-2 px-4 py-2 bg-white border rounded-full text-sm'>
           <span className='font-medium'>Price</span>
         </button>
+
         <div className='flex gap-2 flex-wrap'>
           {amenities &&
             amenities.slice(0, 3).map((amenity) => (
@@ -207,11 +265,15 @@ const Hospital = () => {
               >
                 <input
                   type='checkbox'
-                  id={`amenity-${amenity.id}`}
+                  id={`amenity-main-${amenity.id}`}
                   className='mr-1'
+                  checked={selectedAmenities.includes(amenity.id)}
+                  onChange={(e) =>
+                    handleAmenityChange(amenity.id, e.target.checked)
+                  }
                 />
                 <label
-                  htmlFor={`amenity-${amenity.id}`}
+                  htmlFor={`amenity-main-${amenity.id}`}
                   className='font-medium'
                 >
                   {amenity.name}
@@ -367,7 +429,7 @@ const Hospital = () => {
         })}
       </div>
       {!loading && institutions.length === 0 && (
-        <div className='text-center py-10'>No hospitals found</div>
+        <div className='text-center py-10'>No hospital found</div>
       )}
       {institutions.length > 0 && (
         <div className='mt-10 mb-6 flex items-center justify-center gap-2'>
@@ -378,6 +440,7 @@ const Hospital = () => {
           >
             Previous
           </span>
+
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
             <span
               key={number}
@@ -407,3 +470,11 @@ const Hospital = () => {
 };
 
 export default Hospital;
+
+
+
+
+
+
+
+

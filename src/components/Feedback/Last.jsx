@@ -3,8 +3,17 @@ import React from "react";
 import pop from "../../assets/img/pop.png";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+
+import { useState } from "react";
 
 const Last = () => {
+
+  const location = useLocation();
+  const [institution, setInstitution] = useState(
+    location.state?.institution || {}
+  ); 
+
   return (
     <div className='min-h-screen flex items-center justify-center p-4 relative'>
       <Link to='/review'>
@@ -18,10 +27,6 @@ const Last = () => {
       <div className='text-center max-w-md w-full px-2'>
         {/* Header */}
         <div className='mb-6 md:mb-8'>
-          <div className='text-gray-600 text-base md:text-lg mb-6 md:mb-12'>
-            Rwanda Airports Company (Restrooms)
-          </div>
-
           {/* Balloon image */}
           <div className='flex justify-center mb-6 md:mb-8'>
             <img
@@ -42,7 +47,11 @@ const Last = () => {
             </div>
 
             <div className='flex justify-center'>
-              <Link to='/postreview/:id'>
+                      
+              <Link
+                to={`/postreview/${institution.id}`}
+                state={{ institution }}
+              >
                 <div className='bg-[#20497F] text-white rounded-lg px-8 py-3 md:px-12 md:py-4 cursor-pointer hover:bg-blue-700 transition-colors'>
                   <div className='text-base md:text-lg font-medium'>
                     Leave Feedback

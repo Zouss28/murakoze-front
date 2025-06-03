@@ -1,12 +1,22 @@
 
 import React, { useState, useEffect } from "react";
-import { Building2, Star, MapPin } from "lucide-react";
+import { Star, MapPin } from "lucide-react";
 import { IoMdMenu } from "react-icons/io";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { IoMdArrowDropdown } from "react-icons/io";
 
 const Hotels = () => {
+  // NEW: State for selected filters
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [selectedPrice, setSelectedPrice] = useState("");
+
+  // fethch institutions by price
+  const fetchInstitutionsByPrice = (price) => {
+    // MODIFIED: Update selected price state instead of direct API call
+    setSelectedPrice(price);
+  };
+
   const [amenities, setAmenities] = useState([]);
   const id = 3;
   const [open, setOpen] = useState(false);
@@ -19,43 +29,26 @@ const Hotels = () => {
   const [filterLabel, setFilterLabel] = useState("Recommended");
   const institutionsPerPage = 3;
 
-
-  const fetchInstitutionsByPrice = (price) => {
-    fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/${id}?price=${price}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Filtered results:", data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  };
-
   const fetchInstitutions = async (filter = null) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       let endpoint = `https://murakozebacked-production.up.railway.app/api/institutions/${id}`;
-
       if (filter === "rating") {
         endpoint = `https://murakozebacked-production.up.railway.app/api/search/rating/${id}`;
         setActiveFilter("rating");
         setFilterLabel("Highest Rated");
       } else if (filter === "review") {
-        endpoint = `https://murakozebacked-production.up.railway.app/api//search/review/${id}`;
+        endpoint = `https://murakozebacked-production.up.railway.app/api/search/review/${id}`;
         setActiveFilter("review");
         setFilterLabel("Most Reviewed");
       } else {
         setActiveFilter("recommended");
         setFilterLabel("Recommended");
       }
-
       const res = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setInstitutions(res.data?.institutions || []);
       setCurrentPage(1); // Reset to page 1 when changing filters
     } catch (err) {
@@ -65,14 +58,61 @@ const Hotels = () => {
     }
   };
 
+  // NEW: Function to apply filters
+  const applyFilters = async () => {
+    if (selectedAmenities.length === 0 && !selectedPrice) {
+      fetchInstitutions(); // No filters, fetch all
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      let endpoint = `https://murakozebacked-production.up.railway.app/api/search/${id}?`;
+
+      // Add price filter if selected
+      if (selectedPrice) {
+        endpoint += `price=${selectedPrice}&`;
+      }
+
+      // Add amenity filters if selected
+      if (selectedAmenities.length > 0) {
+        endpoint += `amenities=${selectedAmenities.join(",")}&`;
+      }
+
+      // Remove trailing & or ?
+      endpoint = endpoint.replace(/[&?]$/, "");
+
+      const res = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setInstitutions(res.data?.institutions || []);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("Error applying filters", err);
+      setError("Failed to apply filters");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // NEW: Handle amenity checkbox change
+  const handleAmenityChange = (amenityId, checked) => {
+    if (checked) {
+      setSelectedAmenities([...selectedAmenities, amenityId]);
+    } else {
+      setSelectedAmenities(selectedAmenities.filter((id) => id !== amenityId));
+    }
+  };
+
   useEffect(() => {
     fetchInstitutions();
   }, []);
 
-
   useEffect(() => {
     fetch(
-      `https:/murakozebacked-production.up.railway.app/api/search/list/amenity`
+      `https://murakozebacked-production.up.railway.app/api/search/list/amenity`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -83,6 +123,10 @@ const Hotels = () => {
       });
   }, []);
 
+  // NEW: Apply filters whenever selectedAmenities or selectedPrice changes
+  useEffect(() => {
+    applyFilters();
+  }, [selectedAmenities, selectedPrice]);
 
   // Calculate pagination indexes
   const indexOfLastInstitution = currentPage * institutionsPerPage;
@@ -99,17 +143,13 @@ const Hotels = () => {
     const now = new Date();
     const day = now.toLocaleString("en-US", { weekday: "long" });
     const currentTime = now.toTimeString().slice(0, 5);
-
     const today = hours?.find((h) => h.day_of_week === day);
     if (!today) return false;
-
     const open = today.open_time;
     const close = today.close_time;
-
     if (close < open) {
       return currentTime >= open || currentTime <= close;
     }
-
     return currentTime >= open && currentTime <= close;
   }
 
@@ -118,7 +158,6 @@ const Hotels = () => {
       return Array(5)
         .fill()
         .map((_, i) => <Star key={i} className='text-gray-300 w-5 h-5' />);
-
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       if (i <= Math.floor(rating)) {
@@ -137,16 +176,20 @@ const Hotels = () => {
       <div className='fixed inset-0 z-50 flex ml-10 mt-16'>
         <div className='bg-white shadow-lg w-64 h-[90vh] flex flex-col'>
           <div className='p-4 space-y-6 overflow-y-auto flex-1'>
+            {/* filter section  */}
             <h2 className='text-lg font-semibold'>Filters</h2>
             <div className='space-y-2'>
               <h3 className='font-medium'>Price</h3>
-           
               <div className='flex justify-between rounded-full border'>
                 {["$", "$$", "$$$", "$$$$"].map((price) => (
                   <label
                     key={price}
                     onClick={() => fetchInstitutionsByPrice(price)}
-                    className='w-full text-center py-2 border-r last:border-none text-gray-600 hover:bg-[#20497F] hover:text-white rounded cursor-pointer'
+                    className={`w-full text-center py-2 border-r last:border-none cursor-pointer ${
+                      selectedPrice === price
+                        ? "bg-[#20497F] text-white"
+                        : "text-gray-600 hover:bg-[#20497F] hover:text-white"
+                    } rounded`}
                   >
                     {price}
                   </label>
@@ -162,6 +205,10 @@ const Hotels = () => {
                       type='checkbox'
                       id={`amenity-${amenity.id}`}
                       className='mr-2'
+                      checked={selectedAmenities.includes(amenity.id)}
+                      onChange={(e) =>
+                        handleAmenityChange(amenity.id, e.target.checked)
+                      }
                     />
                     <label htmlFor={`amenity-${amenity.id}`}>
                       {amenity.name}
@@ -170,7 +217,6 @@ const Hotels = () => {
                 ))}
             </div>
           </div>
-
           <div className='border-t border-gray-200'>
             <div className='flex'>
               <button
@@ -188,13 +234,13 @@ const Hotels = () => {
             </div>
           </div>
         </div>
-
         <div className='flex-1' onClick={() => setShowFilterPopup(false)}></div>
       </div>
     );
   };
 
   const API_BASE_URL = "https://murakozebacked-production.up.railway.app/";
+
   return (
     <div className='container mx-auto px-4 py-8'>
       <div className='flex flex-wrap gap-2 mb-6'>
@@ -205,9 +251,11 @@ const Hotels = () => {
           <IoMdMenu />
           <span className='font-medium'>All</span>
         </button>
+
         <button className='flex items-center gap-2 px-4 py-2 bg-white border rounded-full text-sm'>
           <span className='font-medium'>Price</span>
         </button>
+
         <div className='flex gap-2 flex-wrap'>
           {amenities &&
             amenities.slice(0, 3).map((amenity) => (
@@ -217,11 +265,15 @@ const Hotels = () => {
               >
                 <input
                   type='checkbox'
-                  id={`amenity-${amenity.id}`}
+                  id={`amenity-main-${amenity.id}`}
                   className='mr-1'
+                  checked={selectedAmenities.includes(amenity.id)}
+                  onChange={(e) =>
+                    handleAmenityChange(amenity.id, e.target.checked)
+                  }
                 />
                 <label
-                  htmlFor={`amenity-${amenity.id}`}
+                  htmlFor={`amenity-main-${amenity.id}`}
                   className='font-medium'
                 >
                   {amenity.name}
@@ -230,9 +282,7 @@ const Hotels = () => {
             ))}
         </div>
       </div>
-
       {showFilterPopup && <FilterPopup />}
-
       <div className='flex justify-between items-center mb-6'>
         <div>
           <p className='text-sm text-gray-600'>Hotels</p>
@@ -252,7 +302,6 @@ const Hotels = () => {
             {filterLabel}
             <IoMdArrowDropdown />
           </button>
-
           {open && (
             <div className='absolute right-0 bg-white shadow p-2 mt-1 text-sm z-10 w-40'>
               <div
@@ -292,7 +341,6 @@ const Hotels = () => {
           )}
         </div>
       </div>
-
       {(activeFilter === "rating" || activeFilter === "review") && (
         <div className='mb-4 flex'>
           <div className='bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center'>
@@ -306,19 +354,17 @@ const Hotels = () => {
           </div>
         </div>
       )}
-
-      {loading && <div className='text-center py-10'>Loading hotels...</div>}
+      {loading && (
+        <div className='text-center py-10'>Loading hotels...</div>
+      )}
       {error && <div className='text-center py-10 text-red-600'>{error}</div>}
-
       <div className='space-y-8 cursor-pointer'>
         {currentInstitutions.map((institution) => {
           const isOpen = isInstitutionOpen(institution.hours || []);
           let imageUrl = "/api/placeholder/400/320";
-
           if (institution.image) {
             imageUrl = `${API_BASE_URL}${institution.image.image_url}`;
           }
-
           return (
             <Link
               to={`/hotels/${institution.id}`}
@@ -353,7 +399,6 @@ const Hotels = () => {
                       ({institution.totalReview || 0} Reviews)
                     </span>
                   </div>
-
                   {activeFilter === "rating" && (
                     <div className='mb-2'>
                       <span className='bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium'>
@@ -361,7 +406,6 @@ const Hotels = () => {
                       </span>
                     </div>
                   )}
-
                   {activeFilter === "review" && (
                     <div className='mb-2'>
                       <span className='bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium'>
@@ -369,7 +413,6 @@ const Hotels = () => {
                       </span>
                     </div>
                   )}
-
                   <p className='text-gray-700 mb-4'>
                     {institution.description?.length > 200
                       ? `${institution.description.substring(0, 200)}... `
@@ -387,11 +430,9 @@ const Hotels = () => {
           );
         })}
       </div>
-
       {!loading && institutions.length === 0 && (
-        <div className='text-center py-10'>No hotels found</div>
+        <div className='text-center py-10'>No hotel found</div>
       )}
-
       {institutions.length > 0 && (
         <div className='mt-10 mb-6 flex items-center justify-center gap-2'>
           <span
@@ -415,7 +456,6 @@ const Hotels = () => {
               {number}
             </span>
           ))}
-
           <span
             className='px-4 py-2 border rounded-lg bg-white text-blue-600 cursor-pointer'
             onClick={() =>

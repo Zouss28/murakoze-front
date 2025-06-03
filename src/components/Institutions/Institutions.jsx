@@ -15,7 +15,7 @@ const Institutions = () => {
         const token = localStorage.getItem("token");
 
         const response = await axios.get(
-          `https://murakozebacked-production.up.railway.app/api/search?q=q&page=1`,
+          `https://murakozebacked-production.up.railway.app/api/search/institutions`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

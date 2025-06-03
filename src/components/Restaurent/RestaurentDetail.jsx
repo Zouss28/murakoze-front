@@ -59,7 +59,6 @@ const RestaurentDetail = () => {
         setInstitution(res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
-        // setError("Failed to load institutions");
       } finally {
         setLoading(false);
       }
@@ -159,11 +158,11 @@ const RestaurentDetail = () => {
 
       {/* Image Gallery - Responsive layout */}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 mb-4'>
-        <div className='col-span-1 sm:col-span-2 sm:row-span-2'>
+        <div className='col-span-1 sm:col-span-2 sm:row-span-2 flex justify-center'>
           <img
             src={mainImageUrl}
             alt='Hotel Exterior'
-            className='w-full h-64 object-cover rounded-lg sm:h-full'
+            className='w-[100%] h-64 object-cover rounded-lg sm:h-80'
             onError={(e) => {
               e.target.src = "/api/placeholder/800/400";
             }}
@@ -251,28 +250,18 @@ const RestaurentDetail = () => {
         <div className='flex flex-col md:flex-row gap-8 items-start'>
           <div className='flex flex-wrap max-w-[250px] gap-3'>
             {institution.business_amenities &&
-              institution.business_amenities
-                .filter(
-                  (item) =>
-                    ![
-                      "Free Wifi",
-                      "Free Parking",
-                      "Coffee",
-                      "Restaurant",
-                    ].includes(item.amenities.name)
-                )
-                .map((item, index) => (
-                  <div key={index} className='flex items-center gap-2'>
-                    <div className='bg-[#20497F] p-2 rounded-full'>
-                      <img
-                        src={`${API_BASE_URL}${item.amenities.icon}`}
-                        alt={item.amenities.name}
-                        className='w-4 h-4 object-contain filter invert brightness-0'
-                      />
-                    </div>
-                    <span className=''>{item.amenities.name}</span>
+              institution.business_amenities.map((item, index) => (
+                <div key={index} className='flex items-center gap-2'>
+                  <div className='bg-[#20497F] p-2 rounded-full'>
+                    <img
+                      src={`${API_BASE_URL}${item.amenities.icon}`}
+                      alt={item.amenities.name}
+                      className='w-4 h-4 object-contain filter invert brightness-0'
+                    />
                   </div>
-                ))}
+                  <span className=''>{item.amenities.name}</span>
+                </div>
+              ))}
           </div>
 
           <div className='flex-1'>
