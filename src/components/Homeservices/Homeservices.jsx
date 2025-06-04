@@ -19,6 +19,7 @@ const Homeservices = () => {
 
   const [amenities, setAmenities] = useState([]);
   const id = 5;
+  const categoryId = 5;
   const [open, setOpen] = useState(false);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [institutions, setInstitutions] = useState([]);
@@ -110,18 +111,18 @@ const Homeservices = () => {
     fetchInstitutions();
   }, []);
 
-  useEffect(() => {
-    fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/list/amenity`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setAmenities(data.amenities);
-      })
-      .catch((error) => {
-        console.error("Error fetching amenities:", error);
-      });
-  }, []);
+    useEffect(() => {
+      fetch(
+        `https://murakozebacked-production.up.railway.app/api/search/list/amenity?category_id=${categoryId}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setAmenities(data.amenities);
+        })
+        .catch((error) => {
+          console.error("Error fetching amenities:", error);
+        });
+    }, []);
 
   // NEW: Apply filters whenever selectedAmenities or selectedPrice changes
   useEffect(() => {

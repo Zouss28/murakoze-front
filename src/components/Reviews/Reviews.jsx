@@ -92,7 +92,7 @@ const Reviews = () => {
       {/* Institution Name */}
       {review.institution?.name && (
         <p className='text-sm text-gray-700 font-bold mb-2 mt-4'>
-          📍 {review.institution.name}
+           {review.institution.name}
         </p>
       )}
 

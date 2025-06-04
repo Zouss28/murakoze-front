@@ -19,6 +19,8 @@ const Hotels = () => {
 
   const [amenities, setAmenities] = useState([]);
   const id = 3;
+  const categoryId = 3;
+ 
   const [open, setOpen] = useState(false);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [institutions, setInstitutions] = useState([]);
@@ -112,7 +114,7 @@ const Hotels = () => {
 
   useEffect(() => {
     fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/list/amenity`
+      `https://murakozebacked-production.up.railway.app/api/search/list/amenity?category_id=${categoryId}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -122,6 +124,7 @@ const Hotels = () => {
         console.error("Error fetching amenities:", error);
       });
   }, []);
+  
 
   // NEW: Apply filters whenever selectedAmenities or selectedPrice changes
   useEffect(() => {

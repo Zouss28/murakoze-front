@@ -19,6 +19,7 @@ const Bank = () => {
 
   const [amenities, setAmenities] = useState([]);
   const id = 2;
+  const categoryId = 2;
   const [open, setOpen] = useState(false);
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -116,7 +117,7 @@ const Bank = () => {
 
   useEffect(() => {
     fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/list/amenity`
+      `https://murakozebacked-production.up.railway.app/api/search/list/amenity?category_id=${categoryId}`
     )
       .then((response) => response.json())
       .then((data) => {

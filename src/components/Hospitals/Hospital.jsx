@@ -19,6 +19,7 @@ const Hospital = () => {
 
   const [amenities, setAmenities] = useState([]);
   const id = 4;
+  const categoryId = 4;
   const [open, setOpen] = useState(false);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [institutions, setInstitutions] = useState([]);
@@ -112,7 +113,7 @@ const Hospital = () => {
 
   useEffect(() => {
     fetch(
-      `https://murakozebacked-production.up.railway.app/api/search/list/amenity`
+      `https://murakozebacked-production.up.railway.app/api/search/list/amenity?category_id=${categoryId}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -122,6 +123,7 @@ const Hospital = () => {
         console.error("Error fetching amenities:", error);
       });
   }, []);
+  
 
   // NEW: Apply filters whenever selectedAmenities or selectedPrice changes
   useEffect(() => {
