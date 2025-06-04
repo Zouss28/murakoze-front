@@ -6,14 +6,14 @@ const REVIEWS_PER_PAGE = 3;
 
 const Reviews = () => {
   const [allReviews, setAllReviews] = useState([]);
-  const [displayedCount, setDisplayedCount] = useState(REVIEWS_PER_PAGE);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchReviews = async (count) => {
+  const fetchReviews = async (page) => {
     setLoading(true);
     const token = localStorage.getItem("token");
-    const page = count / REVIEWS_PER_PAGE;
 
     try {
       const response = await axios.get(
@@ -28,28 +28,53 @@ const Reviews = () => {
         response.data.reviews &&
         response.data.reviews.length > 0
       ) {
-        setAllReviews((prev) => [...prev, ...response.data.reviews]);
+        const newReviews = response.data.reviews;
+
+        if (page === 1) {
+          // First load - replace all reviews
+          setAllReviews(newReviews);
+        } else {
+          // Subsequent loads - append new reviews, but avoid duplicates
+          setAllReviews((prev) => {
+            const existingIds = prev.map((review) => review.id);
+            const uniqueNewReviews = newReviews.filter(
+              (review) => !existingIds.includes(review.id)
+            );
+            return [...prev, ...uniqueNewReviews];
+          });
+        }
+
+        if (newReviews.length < REVIEWS_PER_PAGE) {
+          setHasMore(false);
+        }
+      } else {
+        // No reviews returned, we've reached the end
+        setHasMore(false);
       }
     } catch (err) {
       setError("Failed to fetch reviews.");
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchReviews(displayedCount);
+    fetchReviews(1);
   }, []);
 
   const handleShowMore = () => {
-    const newCount = displayedCount + REVIEWS_PER_PAGE;
-    setDisplayedCount(newCount);
-    fetchReviews(newCount);
+    if (!loading && hasMore) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchReviews(nextPage);
+    }
   };
 
   const handleViewLess = () => {
-    setDisplayedCount(REVIEWS_PER_PAGE);
+    setCurrentPage(1);
     setAllReviews((prev) => prev.slice(0, REVIEWS_PER_PAGE));
+    setHasMore(true); 
   };
 
   const renderReview = (review) => (
@@ -89,17 +114,15 @@ const Reviews = () => {
         </div>
       )}
 
-      {/* Institution Name */}
       {review.institution?.name && (
         <p className='text-sm text-gray-700 font-bold mb-2 mt-4'>
-           {review.institution.name}
+          {review.institution.name}
         </p>
       )}
 
       <p className='text-gray-800'>{review.review}</p>
     </div>
   );
-  
 
   return (
     <div className='mb-16 mt-24'>
@@ -108,9 +131,7 @@ const Reviews = () => {
       <div className='container mx-auto px-4'>
         {allReviews.length > 0 ? (
           <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
-            {allReviews
-              .slice(0, displayedCount)
-              .map((review) => renderReview(review))}
+            {allReviews.map((review) => renderReview(review))}
           </div>
         ) : (
           <div className='text-center py-8'>
@@ -120,19 +141,20 @@ const Reviews = () => {
 
         {error && <div className='text-red-500 text-center mt-4'>{error}</div>}
 
-        {/* Buttons */}
         <div className='text-center mt-8 space-x-4'>
-          <button
-            className='text-blue-600 font-medium'
-            onClick={handleShowMore}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "More Reviews"}
-          </button>
-
-          {displayedCount > REVIEWS_PER_PAGE && (
+          {hasMore && (
             <button
-              className='text-blue-600 font-medium'
+              className='text-blue-600 font-medium disabled:text-gray-900'
+              onClick={handleShowMore}
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "More Reviews"}
+            </button>
+          )}
+
+          {allReviews.length > REVIEWS_PER_PAGE && (
+            <button
+              className='text-blue-600 font-medium disabled:text-gray-900'
               onClick={handleViewLess}
               disabled={loading}
             >
