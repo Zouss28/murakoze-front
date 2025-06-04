@@ -37,10 +37,7 @@ const RestaurentDetail = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        console.log(res.data);
-
-        // Parse button data
+        
         if (res.data?.institution?.button_one) {
           try {
             setButtonOne(JSON.parse(res.data.institution.button_one));

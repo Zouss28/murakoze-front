@@ -37,7 +37,7 @@ const Home = () => {
   const getCategoryPath = (categoryName) => {
     const pathMap = {
       "Food/Drinks": "/restaurents",
-      "Finincial Services": "/banks",
+      "Financial Services": "/banks",
       "Hotel/Travels": "/hotels",
       "Health/Medical": "/hospitals",
       "Home Services": "/homeservices",
@@ -100,7 +100,7 @@ const Home = () => {
     },
   ];
   
-  // Handle category click to navigate to the correct page with ID
+
   const handleCategoryClick = (category) => {
     const path = getCategoryPath(category.name);
     navigate(path)

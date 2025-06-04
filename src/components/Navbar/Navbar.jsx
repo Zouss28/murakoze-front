@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../../assets/img/logo.jpeg";
 import { useParams } from "react-router-dom";
+import { IoMenuOutline } from "react-icons/io5";
 
 const Navbar = () => {
   const { id } = useParams();
@@ -128,9 +129,40 @@ const Navbar = () => {
       }
     }
   };
-  const handleCategoryClick = (category) => {
+
+
+  const handleCategoryClick = async (category) => {
     setSearchQuery(category.name);
     setShowResults(false);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `https://murakozebacked-production.up.railway.app/api/institutions/${category.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      const institutionsData = res.data?.institutions || [];
+      if (institutionsData.length > 0) {
+        navigate("/detailsinstitution", {
+          state: { institutions: institutionsData },
+        });
+        setSearchQuery(""); // Clear search bar
+      } else {
+        setError("No institutions found for this category");
+        setTimeout(() => setError(null), 3000);
+      }
+    } catch (err) {
+      setError("Failed to fetch institutions for category");
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const navItems = [
@@ -402,22 +434,10 @@ const Navbar = () => {
           <div className='sm:hidden flex items-center'>
             <button
               type='button'
-              className='inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500'
+              className='inline-flex items-center justify-center p-2 rounded-md text-gray-900 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500'
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <svg
-                className='h-6 w-6'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M4 6h16M4 12h16M4 18h16'
-                />
-              </svg>
+              <IoMenuOutline className="h-6 w-6 font-bold " />
             </button>
           </div>
         </div>
