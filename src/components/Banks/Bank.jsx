@@ -150,21 +150,7 @@ const Bank = () => {
   }
 
   function isInstitutionOpen(hours) {
-    const now = new Date();
-    const day = now.toLocaleString("en-US", { weekday: "long" });
-    const currentTime = now.toTimeString().slice(0, 5);
-
-    const today = hours?.find((h) => h.day_of_week === day);
-    if (!today) return false;
-
-    const open = today.open_time;
-    const close = today.close_time;
-
-    if (close < open) {
-      return currentTime >= open || currentTime <= close;
-    }
-
-    return currentTime >= open && currentTime <= close;
+    return true;
   }
 
   // Render star ratings
