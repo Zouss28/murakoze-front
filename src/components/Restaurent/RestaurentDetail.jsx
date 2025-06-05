@@ -9,7 +9,6 @@ import {
 import axios from "axios";
 
 const RestaurentDetail = () => {
-
   const { id } = useParams();
   const [institution, setInstitution] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +25,12 @@ const RestaurentDetail = () => {
     setShowServicesPopup(false);
   };
 
+  const reviews = institution?.reviews || [];
+  const ratingCounts = [1, 2, 3, 4, 5].map(
+    (rating) => reviews.filter((review) => review.rating === rating).length
+  );
+  const totalReviews = reviews.length;
+
   useEffect(() => {
     const fetchInstitutions = async () => {
       setLoading(true);
@@ -37,7 +42,7 @@ const RestaurentDetail = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        
+
         if (res.data?.institution?.button_one) {
           try {
             setButtonOne(JSON.parse(res.data.institution.button_one));
@@ -54,6 +59,7 @@ const RestaurentDetail = () => {
           }
         }
         setInstitution(res.data?.institution);
+        console.log("Fetched institution:", res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
       } finally {
@@ -123,18 +129,20 @@ const RestaurentDetail = () => {
       ? institution.images.slice(1, 4)
       : [];
 
-  // Parse working hours from the API response
-  const workingHours = institution.working_hours
-    ? JSON.parse(institution.working_hours || "{}")
-    : {
-        Monday: "09:00 AM - 12:00 AM",
-        Tuesday: "08:00 AM - 02:00 AM",
-        Wednesday: "09:00 AM - 12:30 AM",
-        Thursday: "10:00 AM - 12:00 AM",
-        Friday: "09:00 AM - 11:30 PM",
-        Saturday: "10:00 AM - 03:00 AM",
-        Sunday: "11:00 AM - 04:00 AM",
-      };
+ 
+
+  // Working hours
+
+  const workingHours = institution.workingHour || [];
+  function formatTime(timeStr) {
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
+    let hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  }
 
   // Get latitude and longitude
   const latitude = institution.latitude || "-1.95465";
@@ -289,12 +297,18 @@ const RestaurentDetail = () => {
         <div className='ml-0 md:ml-28'>
           <h3 className='font-medium mb-2 '>Our opening hours</h3>
           <div className='space-y-3 md:mr-16'>
-            {Object.entries(workingHours).map(([day, hours]) => (
-              <div key={day} className='flex justify-between'>
-                <span>{day}</span>
-                <span>{hours}</span>
-              </div>
-            ))}
+            {workingHours.length === 0 ? (
+              <div>No working hours available.</div>
+            ) : (
+              workingHours.map((item) => (
+                <div key={item.day_of_week} className='flex justify-between'>
+                  <span>{item.day_of_week}</span>
+                  <span>
+                    {formatTime(item.open_time)} - {formatTime(item.close_time)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -310,39 +324,26 @@ const RestaurentDetail = () => {
           </div>
 
           <div className='flex gap-1 mb-4'>{renderStars(avgRating)}</div>
-
           <div className='space-y-2'>
-            {/* Rating distribution - you can replace this with actual data if available */}
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>5 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[90%]'></div>
+            {[5, 4, 3, 2, 1].map((stars) => (
+              <div key={stars} className='flex items-center gap-2'>
+                <span className='w-12'>
+                  {stars} star{stars !== 1 ? "s" : ""}
+                </span>
+                <div className='flex-1 bg-gray-200 rounded-full h-2'>
+                  <div
+                    className='bg-[#20497F] h-2 rounded-full'
+                    style={{
+                      width: `${
+                        totalReviews
+                          ? (ratingCounts[stars - 1] / totalReviews) * 100
+                          : 0
+                      }%`,
+                    }}
+                  ></div>
+                </div>
               </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>4 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[40%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>3 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[30%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>2 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[20%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>1 star</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[5%]'></div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

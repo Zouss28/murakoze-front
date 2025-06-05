@@ -1,20 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, Wifi, Car, Bed, UtensilsCrossed, ArrowLeft } from 'lucide-react';
+import { Star, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { IoMdClose } from "react-icons/io";
 
-
 const BankDetail = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [institution, setInstitution] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showServicesPopup, setShowServicesPopup] = useState(false);
   const [buttonOne, setButtonOne] = useState(null);
-  const [buttonTwo, setButtonTwo] = useState(null);
-
+  const [buttonTwo, setButtonTwo] = useState(null);  
+  
   const openServicesPopup = () => {
     setShowServicesPopup(true);
   };
@@ -22,6 +21,13 @@ const BankDetail = () => {
   const closeServicesPopup = () => {
     setShowServicesPopup(false);
   };
+
+  const reviews = institution?.reviews || [];
+  const ratingCounts = [1, 2, 3, 4, 5].map(
+    (rating) => reviews.filter((review) => review.rating === rating).length
+  );
+  const totalReviews = reviews.length;
+
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -34,9 +40,9 @@ const BankDetail = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-       
+
         console.log(res.data);
-        
+
         // Parse button data
         if (res.data?.institution?.button_one) {
           try {
@@ -45,7 +51,7 @@ const BankDetail = () => {
             console.error("Error parsing button_one", e);
           }
         }
-        
+
         if (res.data?.institution?.button_two) {
           try {
             setButtonTwo(JSON.parse(res.data.institution.button_two));
@@ -53,7 +59,7 @@ const BankDetail = () => {
             console.error("Error parsing button_two", e);
           }
         }
-    
+
         setInstitution(res.data?.institution);
       } catch (err) {
         console.error("Error fetching institutions", err);
@@ -61,7 +67,7 @@ const BankDetail = () => {
         setLoading(false);
       }
     };
-  
+
     fetchInstitutions();
   }, [id]);
 
@@ -69,50 +75,72 @@ const BankDetail = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       if (i <= Math.floor(rating)) {
-        stars.push(<Star key={i} className="text-blue-800 fill-blue-800" size={20} />);
+        stars.push(
+          <Star key={i} className='text-blue-800 fill-blue-800' size={20} />
+        );
       } else {
-        stars.push(<Star key={i} className="text-gray-300" size={20} />);
+        stars.push(<Star key={i} className='text-gray-300' size={20} />);
       }
     }
     return stars;
   };
-  
+
   // Base URL for image paths
   const API_BASE_URL = "https://murakozebacked-production.up.railway.app/";
 
-  if (loading) return <div className="w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center">Loading bank details...</div>;
-  if (error) return <div className="w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center text-red-500">{error}</div>;
-  if (!institution) return <div className="w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center">Bank not found</div>;
+  if (loading)
+    return (
+      <div className='w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center'>
+        Loading bank details...
+      </div>
+    );
+  if (error)
+    return (
+      <div className='w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center text-red-500'>
+        {error}
+      </div>
+    );
+  if (!institution)
+    return (
+      <div className='w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8 text-center'>
+        Bank not found
+      </div>
+    );
 
   // Calculate average rating from reviews
   const calculateAvgRating = () => {
     if (!institution.reviews || institution.reviews.length === 0) return 0;
-    const sum = institution.reviews.reduce((acc, review) => acc + review.rating, 0);
+    const sum = institution.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0
+    );
     return sum / institution.reviews.length;
   };
-  
+
   const avgRating = calculateAvgRating();
-  
+
   let mainImageUrl = "/api/placeholder/800/400";
   if (institution.images && institution.images.length > 0) {
     mainImageUrl = `${API_BASE_URL}${institution.images[0].image_url}`;
   }
 
-  const galleryImages = institution.images && institution.images.length > 1 ? 
-    institution.images.slice(1, 4) : [];
-    
-  const workingHours = institution.working_hours ? 
-    JSON.parse(institution.working_hours || "{}") : 
-    {
-      Monday: "09:00 AM - 12:00 AM",
-      Tuesday: "08:00 AM - 02:00 AM",
-      Wednesday: "09:00 AM - 12:30 AM",
-      Thursday: "10:00 AM - 12:00 AM",
-      Friday: "09:00 AM - 11:30 PM",
-      Saturday: "10:00 AM - 03:00 AM",
-      Sunday: "11:00 AM - 04:00 AM"
-    };
-    
+  const galleryImages =
+    institution.images && institution.images.length > 1
+      ? institution.images.slice(1, 4)
+      : [];
+
+  // Get working hoours
+  const workingHours = institution.workingHour || [];
+  function formatTime(timeStr) {
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
+    let hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  }
+
   // Get latitude and longitude
   const latitude = institution.latitude || "-1.95465";
   const longitude = institution.longitude || "30.092757";
@@ -244,12 +272,18 @@ const BankDetail = () => {
         <div className='ml-0 md:ml-28'>
           <h3 className='font-medium mb-2 '>Our opening hours</h3>
           <div className='space-y-3 md:mr-16'>
-            {Object.entries(workingHours).map(([day, hours]) => (
-              <div key={day} className='flex justify-between'>
-                <span>{day}</span>
-                <span>{hours}</span>
-              </div>
-            ))}
+            {workingHours.length === 0 ? (
+              <div>No working hours available.</div>
+            ) : (
+              workingHours.map((item) => (
+                <div key={item.day_of_week} className='flex justify-between'>
+                  <span>{item.day_of_week}</span>
+                  <span>
+                    {formatTime(item.open_time)} - {formatTime(item.close_time)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -265,39 +299,27 @@ const BankDetail = () => {
           </div>
 
           <div className='flex gap-1 mb-4'>{renderStars(avgRating)}</div>
-
+      
           <div className='space-y-2'>
-            {/* Rating distribution - you can replace this with actual data if available */}
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>5 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[90%]'></div>
+            {[5, 4, 3, 2, 1].map((stars) => (
+              <div key={stars} className='flex items-center gap-2'>
+                <span className='w-12'>
+                  {stars} star{stars !== 1 ? "s" : ""}
+                </span>
+                <div className='flex-1 bg-gray-200 rounded-full h-2'>
+                  <div
+                    className='bg-[#20497F] h-2 rounded-full'
+                    style={{
+                      width: `${
+                        totalReviews
+                          ? (ratingCounts[stars - 1] / totalReviews) * 100
+                          : 0
+                      }%`,
+                    }}
+                  ></div>
+                </div>
               </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>4 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[40%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>3 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[30%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>2 stars</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[20%]'></div>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='w-12'>1 star</span>
-              <div className='flex-1 bg-gray-200 rounded-full h-2'>
-                <div className='bg-[#20497F] h-2 rounded-full w-[5%]'></div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

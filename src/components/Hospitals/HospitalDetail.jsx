@@ -25,6 +25,12 @@ const HospitalDetail = () => {
     setShowServicesPopup(false);
   };
 
+  const reviews = institution?.reviews || [];
+  const ratingCounts = [1, 2, 3, 4, 5].map(
+    (rating) => reviews.filter((review) => review.rating === rating).length
+  );
+  const totalReviews = reviews.length;
+
   useEffect(() => {
     const fetchInstitutions = async () => {
       setLoading(true);
@@ -36,7 +42,6 @@ const HospitalDetail = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
 
         if (res.data?.institution?.button_one) {
           try {
@@ -123,17 +128,17 @@ const HospitalDetail = () => {
       ? institution.images.slice(1, 4)
       : [];
 
-  const workingHours = institution.working_hours
-    ? JSON.parse(institution.working_hours || "{}")
-    : {
-        Monday: "09:00 AM - 12:00 AM",
-        Tuesday: "08:00 AM - 02:00 AM",
-        Wednesday: "09:00 AM - 12:30 AM",
-        Thursday: "10:00 AM - 12:00 AM",
-        Friday: "09:00 AM - 11:30 PM",
-        Saturday: "10:00 AM - 03:00 AM",
-        Sunday: "11:00 AM - 04:00 AM",
-      };
+  // Get working hoours
+  const workingHours = institution.workingHour || [];
+  function formatTime(timeStr) {
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
+    let hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  }
 
   // Get latitude and longitude
   const latitude = institution.latitude || "-1.95465";
@@ -277,12 +282,18 @@ const HospitalDetail = () => {
         <div className='ml-0 md:ml-28'>
           <h3 className='font-medium mb-2'>Our opening hours</h3>
           <div className='space-y-3 md:mr-16'>
-            {Object.entries(workingHours).map(([day, hours]) => (
-              <div key={day} className='flex justify-between'>
-                <span>{day}</span>
-                <span>{hours}</span>
-              </div>
-            ))}
+            {workingHours.length === 0 ? (
+              <div>No working hours available.</div>
+            ) : (
+              workingHours.map((item) => (
+                <div key={item.day_of_week} className='flex justify-between'>
+                  <span>{item.day_of_week}</span>
+                  <span>
+                    {formatTime(item.open_time)} - {formatTime(item.close_time)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -300,15 +311,21 @@ const HospitalDetail = () => {
           <div className='flex gap-1 mb-4'>{renderStars(avgRating)}</div>
 
           <div className='space-y-2'>
-            {[5, 4, 3, 2, 1].map((star, i) => (
-              <div key={i} className='flex items-center gap-2'>
+            {[5, 4, 3, 2, 1].map((stars) => (
+              <div key={stars} className='flex items-center gap-2'>
                 <span className='w-12'>
-                  {star} star{star > 1 && "s"}
+                  {stars} star{stars !== 1 ? "s" : ""}
                 </span>
                 <div className='flex-1 bg-gray-200 rounded-full h-2'>
                   <div
                     className='bg-[#20497F] h-2 rounded-full'
-                    style={{ width: `${[90, 40, 30, 20, 5][i]}%` }}
+                    style={{
+                      width: `${
+                        totalReviews
+                          ? (ratingCounts[stars - 1] / totalReviews) * 100
+                          : 0
+                      }%`,
+                    }}
                   ></div>
                 </div>
               </div>
