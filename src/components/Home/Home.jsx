@@ -108,32 +108,34 @@ const Home = () => {
 
   return (
     <>
-      <div className="">
+      <div className=''>
         <Detail slides={slides} />
       </div>
 
       {/* Reviews Section */}
-      <div className="max-w-7xl mx-auto px-4">
-       <Reviews />
+      <div className='max-w-7xl mx-auto px-4'>
+        <Reviews />
 
         {/* Categories Section */}
-        <div className="py-12">
-          <h2 className="text-2xl font-bold text-center mb-8">Categories</h2>
-          
+        <div className='py-12'>
+          <h2 className='text-2xl font-bold text-center mb-8'>Categories</h2>
+
           {loading ? (
-            <div className="text-center py-8">Loading categories...</div>
+            <div className='text-center py-8'>Loading categories...</div>
           ) : error ? (
-            <div className="text-center py-8 text-red-500">{error}</div>
+            <div className='text-center py-8 text-red-500'>{error}</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8'>
               {categories.map((category) => (
                 <div
                   key={category.id}
                   onClick={() => handleCategoryClick(category)}
-                  className="bg-blue-50 rounded-lg p-8 flex flex-col items-center justify-center h-60 cursor-pointer transition-transform hover:scale-105"
+                  className='bg-blue-50 rounded-lg p-8 flex flex-col items-center justify-center h-60 cursor-pointer transition-transform hover:scale-105 border border-white-900'
                 >
-                  <div className="mb-4">{getCategoryIcon(category.name)}</div>
-                  <h3 className="text-lg font-medium text-center">{category.name}</h3>
+                  <div className='mb-4'>{getCategoryIcon(category.name)}</div>
+                  <h3 className='text-lg font-medium text-center'>
+                    {category.name}
+                  </h3>
                 </div>
               ))}
             </div>
@@ -141,37 +143,41 @@ const Home = () => {
         </div>
 
         {/* QR Section */}
-        <div className="mb-12">
-          <div className="relative w-full py-16 bg-gradient-to-r from-blue-900 to-blue-700 text-white overflow-hidden rounded-[32px]">
-            <div className="absolute inset-0 z-0">
-              <img src={scan} alt="Background" className="w-full h-full object-cover opacity-90" />
+        <div className='mb-12'>
+          <div className='relative w-full py-16 bg-gradient-to-r from-blue-900 to-blue-700 text-white overflow-hidden rounded-[32px]'>
+            <div className='absolute inset-0 z-0'>
+              <img
+                src={scan}
+                alt='Background'
+                className='w-full h-full object-cover opacity-90'
+              />
             </div>
-            <div className="relative z-10 text-center px-4">
-              <p className="text-lg mb-2">Make Your Voice Heard!</p>
-              <h2 className="text-3xl font-bold mb-12">
+            <div className='relative z-10 text-center px-4'>
+              <p className='text-lg mb-2'>Make Your Voice Heard!</p>
+              <h2 className='text-3xl font-bold mb-12'>
                 Download Murakoze today and start making a difference!
               </h2>
-              <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+              <div className='flex flex-col md:flex-row items-center justify-center gap-12'>
                 {/* Android QR */}
-                <div className="flex flex-col items-center">
-                  <p className="text-xl mb-4">Android</p>
-                  <div className="bg-white p-3 rounded-lg">
+                <div className='flex flex-col items-center'>
+                  <p className='text-xl mb-4'>Android</p>
+                  <div className='bg-white p-3 rounded-lg'>
                     <img
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://play.google.com/store/apps/murakoze"
-                      alt="Android QR Code"
-                      className="w-48 h-48"
+                      src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://play.google.com/store/apps/murakoze'
+                      alt='Android QR Code'
+                      className='w-48 h-48'
                     />
                   </div>
                 </div>
 
                 {/* iOS QR */}
-                <div className="flex flex-col items-center">
-                  <p className="text-xl mb-4">iOS</p>
-                  <div className="bg-white p-3 rounded-lg">
+                <div className='flex flex-col items-center'>
+                  <p className='text-xl mb-4'>iOS</p>
+                  <div className='bg-white p-3 rounded-lg'>
                     <img
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://apps.apple.com/us/app/murakoze"
-                      alt="iOS QR Code"
-                      className="w-48 h-48"
+                      src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://apps.apple.com/us/app/murakoze'
+                      alt='iOS QR Code'
+                      className='w-48 h-48'
                     />
                   </div>
                 </div>

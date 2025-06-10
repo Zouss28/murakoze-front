@@ -7,6 +7,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { IoMdClose } from "react-icons/io";
+import food from "../../assets/img/food.png";
+import outside from "../../assets/img/outside.png";
+import room from "../../assets/img/room.png";
+import java from "../../assets/img/java.png";
 
 const HospitalDetail = () => {
   const { id } = useParams();
@@ -371,6 +375,142 @@ const HospitalDetail = () => {
           </div>
         </div>
       )}
+         {/* getting reviews for institution */}
+            <div className='min-h-screen'>
+              <div className='mx-auto ml-0 mt-10 px-4'>
+                <div className='flex flex-col lg:flex-row gap-8 lg:gap-16'>
+                  {/* Sidebar */}
+                  <div className='w-full lg:w-60 space-y-4 mt-4'>
+                    {/* Action Buttons */}
+                    <div className='space-y-3'>
+                      <button className='w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700'>
+                        Fill Our Survey
+                      </button>
+                      <button className='w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700'>
+                        Write Your Review
+                      </button>
+                    </div>
+      
+                    {/* View All Button */}
+                    <button className='w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700'>
+                      View All
+                    </button>
+      
+                    {/* Star Rating Filters */}
+                    <div className='space-y-3'>
+                      <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
+                        <div className='font-semibold text-gray-800'>5 Stars</div>
+                      </div>
+                      <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
+                        <div className='font-semibold text-gray-800'>4 Stars</div>
+                      </div>
+                      <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
+                        <div className='font-semibold text-gray-800'>3 Stars</div>
+                      </div>
+                      <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
+                        <div className='font-semibold text-gray-800'>2 Stars</div>
+                      </div>
+                    </div>
+                  </div>
+      
+                  {/* Main Content */}
+                  <div className='flex-1'>
+                    <h1 className='text-2xl font-semibold text-gray-800 mb-6 mt-4'>
+                      Reviews
+                    </h1>
+      
+                    <div className='space-y-6'>
+                      {/* Review 1 */}
+                      <div className='bg-white p-6 rounded-lg shadow-md'>
+                        <div className='flex flex-col sm:flex-row items-start gap-4 mb-4'>
+                          <div className='w-12 h-12 bg-red-500 rounded flex items-center justify-center text-white font-bold'>
+                            JH
+                          </div>
+                          <div className='flex-1'>
+                            <h3 className='font-semibold text-gray-900'>
+                              Java House Kigali Heights
+                            </h3>
+                            <p className='text-gray-600 text-sm'>
+                              Kigali Heights, KG 7 Ave, Kigali, Rwanda
+                            </p>
+                            <div className='flex items-center gap-1 mt-2'>
+                              <div className='flex text-yellow-400'>★ ★ ★ ★ ☆</div>
+                              <span className='text-sm text-gray-600 ml-2'>
+                                April 20th, 2025
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+      
+                        <p className='text-gray-700 mb-4'>
+                          Great spot for brunch or casual meetings. Their cappuccino
+                          hits just right and the breakfast platter is chef's kiss.
+                          Service can be a little slow during peak hours, but the view
+                          of the Convention Centre makes up for it. Bonus: comfy seats
+                          and good Wi-Fi.
+                        </p>
+      
+                        <div className='flex flex-wrap gap-4'>
+                          <img
+                            src={java}
+                            className='w-32 h-24 object-cover rounded-lg'
+                          />
+                          <img
+                            src={room}
+                            alt='Restaurant interior'
+                            className='w-32 h-24 object-cover rounded-lg'
+                          />
+                        </div>
+                      </div>
+      
+                      {/* Review 2 */}
+                      <div className='bg-white p-6 rounded-lg shadow-md'>
+                        <div className='flex flex-col sm:flex-row items-start gap-4 mb-4'>
+                          <div className='w-12 h-12 bg-red-500 rounded flex items-center justify-center text-white font-bold'>
+                            JH
+                          </div>
+                          <div className='flex-1'>
+                            <h3 className='font-semibold text-gray-900'>
+                              Java House Kigali Heights
+                            </h3>
+                            <p className='text-gray-600 text-sm'>
+                              Kigali Heights, KG 7 Ave, Kigali, Rwanda
+                            </p>
+                            <div className='flex items-center gap-1 mt-2'>
+                              <div className='flex text-yellow-400'>★ ★ ★ ★ ★</div>
+                              <span className='text-sm text-gray-600 ml-2'>
+                                April 12th, 2025
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+      
+                        <p className='text-gray-700 mb-4'>
+                          Luxury meets Rwandan hospitality. The rooms are spotless,
+                          the pool is crystal-clear, and the breakfast buffet?
+                          Dangerous. You'll go in for one plate and come out with
+                          three. Staff are super attentive—you'll feel like royalty
+                          even if you just came for the Wi-Fi and iced tea.
+                        </p>
+      
+                        <div className='flex flex-wrap gap-4'>
+                          <img
+                            src={outside}
+                            alt='Hotel room'
+                            className='w-32 h-24 object-cover rounded-lg'
+                          />
+                          <img
+                            src={food}
+                            alt='Breakfast buffet'
+                            className='w-32 h-24 object-cover rounded-lg'
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
     </div>
   );
 };

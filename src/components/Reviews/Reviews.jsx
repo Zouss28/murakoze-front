@@ -78,7 +78,10 @@ const Reviews = () => {
   };
 
   const renderReview = (review) => (
-    <div key={review.id} className='bg-blue-50 rounded-lg p-6 shadow-sm mb-4'>
+    <div
+      key={review.id}
+      className='bg-blue-50 rounded-lg p-6 shadow-sm mb-4 border border-white-900'
+    >
       <div className='flex items-center mb-4'>
         <img
           src={`https://ui-avatars.com/api/?name=${review.user.first_name}${review.user.last_name}&background=random`}
@@ -128,13 +131,13 @@ const Reviews = () => {
     <div className='mb-16 mt-24'>
       <h2 className='text-2xl font-bold text-center mb-8'>Recent Reviews</h2>
 
-      <div className='container mx-auto px-4'>
+      <div className='container mx-auto px-4 '>
         {allReviews.length > 0 ? (
-          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
+          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3 '>
             {allReviews.map((review) => renderReview(review))}
           </div>
         ) : (
-          <div className='text-center py-8'>
+          <div className='text-center py-8 '>
             {loading ? "Loading reviews..." : "No reviews available"}
           </div>
         )}

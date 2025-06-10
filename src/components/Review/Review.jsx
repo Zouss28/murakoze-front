@@ -138,7 +138,7 @@ const Review = () => {
           
                 <div
                   key={review.id || index}
-                  className='bg-blue-50 p-6 rounded-lg'
+                  className='bg-blue-50 shadow-lg p-6 rounded-lg'
                 >
                   <div className='flex items-start gap-4'>
                     <div className='w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center text-white'>

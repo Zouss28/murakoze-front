@@ -107,6 +107,8 @@ const Rate = () => {
   const choices = JSON.parse(
     (currentQuestion.choices || "[]").replace(/[“”]/g, '"')
   );
+
+  
   return (
     <div className='min-h-screen flex items-center justify-center p-4'>
       <div className='text-center max-w-4xl'>
