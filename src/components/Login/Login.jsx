@@ -95,6 +95,7 @@ const Login = () => {
               <input 
                 type="email" 
                 name="email" 
+                id='email'
                 value={formData.email} 
                 onChange={handleChange}
                 placeholder="Email"
@@ -104,6 +105,7 @@ const Login = () => {
             </div>
             <div className="mb-4">
               <input 
+                id='password'
                 type="password" 
                 name="password" 
                 value={formData.password} 

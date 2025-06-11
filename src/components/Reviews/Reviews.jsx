@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { data } from "autoprefixer";
 
 const REVIEWS_PER_PAGE = 3;
 
@@ -14,7 +15,7 @@ const Reviews = () => {
   const fetchReviews = async (page) => {
     setLoading(true);
     const token = localStorage.getItem("token");
-
+  
     try {
       const response = await axios.get(
         `https://murakozebacked-production.up.railway.app/api/review/recent?page=${page}`,
@@ -31,7 +32,6 @@ const Reviews = () => {
         const newReviews = response.data.reviews;
 
         if (page === 1) {
-          // First load - replace all reviews
           setAllReviews(newReviews);
         } else {
           // Subsequent loads - append new reviews, but avoid duplicates
@@ -48,7 +48,6 @@ const Reviews = () => {
           setHasMore(false);
         }
       } else {
-        // No reviews returned, we've reached the end
         setHasMore(false);
       }
     } catch (err) {

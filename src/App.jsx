@@ -9,7 +9,6 @@ import Signup from './components/Signup/Signup'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import Layout from './components/Layout/Layout'
-import Next from './components/Signup/Next';
 import Writereview from './components/Writereview/Writereview';
 import Detail from './components/Imageslider/Detail';
 import ScrollToTop from './components/ScrolllToTop/ScrollToTop';
@@ -58,7 +57,6 @@ const App = () => {
           <Route path='/homeservices/:id' element={<HomeserviceDetail />} />
           <Route path='login' element={<Login />} />
           <Route path='signup' element={<Signup />} />
-          <Route path='next' element={<Next />} />
           <Route path='review' element={<Writereview />} />
           <Route path='detail' element={<Detail />} />
           <Route path='overview' element={<Overview />} />

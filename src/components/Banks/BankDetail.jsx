@@ -1,13 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, data } from 'react-router-dom';
 import { Star, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { IoMdClose } from "react-icons/io";
-import food from "../../assets/img/food.png";
-import outside from "../../assets/img/outside.png";
-import room from "../../assets/img/room.png";
-import java from "../../assets/img/java.png";
 
 const BankDetail = () => {
   const { id } = useParams();
@@ -17,7 +13,9 @@ const BankDetail = () => {
   const [showServicesPopup, setShowServicesPopup] = useState(false);
   const [buttonOne, setButtonOne] = useState(null);
   const [buttonTwo, setButtonTwo] = useState(null);  
-  
+  const [filter, setFilter] = useState(null);
+  const [reviews, setReviews] = useState([]);
+
   const openServicesPopup = () => {
     setShowServicesPopup(true);
   };
@@ -26,11 +24,13 @@ const BankDetail = () => {
     setShowServicesPopup(false);
   };
 
-  const reviews = institution?.reviews || [];
+  //reviews for institutions
+  const institutionReviews = institution?.reviews || [];
   const ratingCounts = [1, 2, 3, 4, 5].map(
-    (rating) => reviews.filter((review) => review.rating === rating).length
+    (rating) =>
+      institutionReviews.filter((review) => review.rating === rating).length
   );
-  const totalReviews = reviews.length;
+  const totalReviews = institutionReviews.length;
 
 
   useEffect(() => {
@@ -44,9 +44,6 @@ const BankDetail = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        console.log(res.data);
-
         // Parse button data
         if (res.data?.institution?.button_one) {
           try {
@@ -74,6 +71,17 @@ const BankDetail = () => {
 
     fetchInstitutions();
   }, [id]);
+
+  // fetch institutions reviews 
+  useEffect(() => {
+    fetch(`https://murakozebacked-production.up.railway.app/api/review/institution/${id}`)
+      .then(res => res.json())
+      .then(data => setReviews(data.reviews || []));
+  }, [id]);
+
+  const filtered = filter ? reviews.filter(r => r.rating === filter) : reviews;
+
+  // rating stars for institutions 
 
   const renderStars = (rating) => {
     const stars = [];
@@ -150,25 +158,25 @@ const BankDetail = () => {
   const longitude = institution.longitude || "30.092757";
 
   return (
-    <div className='w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8'>
+    <div className="w-full mx-auto px-4 sm:px-6 md:px-12 p-4 mb-8">
       <Link
-        to='/banks'
-        className='flex items-center text-blue-600 mb-4 hover:underline'
+        to="/banks"
+        className="flex items-center text-blue-600 mb-4 hover:underline"
       >
-        <ArrowLeft className='w-4 h-4 mr-1' /> Back to Banks
+        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Banks
       </Link>
 
-      <h1 className='text-xl sm:text-2xl font-bold text-blue-800 pb-2 mb-4'>
+      <h1 className="text-xl sm:text-2xl font-bold text-blue-800 pb-2 mb-4">
         {institution.name}
       </h1>
 
       {/* Image Gallery - Responsive layout */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 mb-4'>
-        <div className='col-span-1 sm:col-span-2 sm:row-span-2'>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 mb-4">
+        <div className="col-span-1 sm:col-span-2 sm:row-span-2">
           <img
             src={mainImageUrl}
-            alt='Hotel Exterior'
-            className='w-full h-64 object-cover rounded-lg sm:h-full'
+            alt="Hotel Exterior"
+            className="w-full h-64 object-cover rounded-lg sm:h-full"
             onError={(e) => {
               e.target.src = "/api/placeholder/800/400";
             }}
@@ -179,8 +187,8 @@ const BankDetail = () => {
           <div key={index}>
             <img
               src={`${API_BASE_URL}${image.image_url}`}
-              alt='Hotel Room'
-              className='w-full h-64 object-cover rounded-lg'
+              alt="Hotel Room"
+              className="w-full h-64 object-cover rounded-lg"
               onError={(e) => {
                 e.target.src = "/api/placeholder/400/300";
               }}
@@ -193,35 +201,35 @@ const BankDetail = () => {
           Array.from({ length: 3 - galleryImages.length }).map((_, index) => (
             <div key={`placeholder-${index}`}>
               <img
-                src='/api/placeholder/400/300'
-                alt='Hotel Room'
-                className='w-full h-64 object-cover rounded-lg'
+                src="/api/placeholder/400/300"
+                alt="Hotel Room"
+                className="w-full h-64 object-cover rounded-lg"
               />
             </div>
           ))}
       </div>
 
       {/* Dynamic Buttons */}
-      <div className='flex flex-col sm:flex-row gap-4 mb-6 sm:-mt-2'>
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:-mt-2">
         {buttonOne &&
           (buttonOne.type === "link" ? (
             <a
               href={buttonOne.url}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='bg-[#20497F] text-white px-4 py-2 rounded-full w-full sm:w-auto text-center'
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#20497F] text-white px-4 py-2 rounded-full w-full sm:w-auto text-center"
             >
               {buttonOne.label || "Visit the Page"}
             </a>
           ) : (
-            <button className='bg-[#20497F] text-white px-4 py-2 rounded-full w-full sm:w-auto'>
+            <button className="bg-[#20497F] text-white px-4 py-2 rounded-full w-full sm:w-auto">
               {buttonOne.label || "Visit the Page"}
             </button>
           ))}
 
         {buttonTwo && (
           <button
-            className='bg-[#20497F] text-white px-4 py-2 rounded-full w-full sm:w-auto'
+            className="bg-[#20497F] text-white px-4 py-2 rounded-full w-full sm:w-auto"
             onClick={openServicesPopup}
           >
             {buttonTwo.label || "View Our Services"}
@@ -230,57 +238,57 @@ const BankDetail = () => {
       </div>
 
       {/* Features/Amenities Section - Responsive */}
-      <div className='flex mt-8 px-4'>
-        <div className='flex flex-col md:flex-row gap-8 items-start'>
-          <div className='flex flex-wrap max-w-[250px] gap-3'>
+      <div className="flex mt-8 px-4">
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="flex flex-wrap max-w-[250px] gap-3">
             {institution.business_amenities &&
               institution.business_amenities.map((item, index) => (
-                <div key={index} className='flex items-center gap-2'>
-                  <div className='bg-[#20497F] p-2 rounded-full'>
+                <div key={index} className="flex items-center gap-2">
+                  <div className="bg-[#20497F] p-2 rounded-full">
                     <img
                       src={`${API_BASE_URL}${item.amenities.icon}`}
                       alt={item.amenities.name}
-                      className='w-4 h-4 object-contain filter invert brightness-0'
+                      className="w-4 h-4 object-contain filter invert brightness-0"
                     />
                   </div>
-                  <span className=''>{item.amenities.name}</span>
+                  <span className="">{item.amenities.name}</span>
                 </div>
               ))}
           </div>
 
-          <div className='flex-1 '>
-            <h3 className='font-semibold text-lg mb-2'>
+          <div className="flex-1 ">
+            <h3 className="font-semibold text-lg mb-2">
               About {institution.name}
             </h3>
-            <p className=''>
+            <p className="">
               {institution.description || "No description available."}
             </p>
           </div>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:mt-16 px-4'>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:mt-16 px-4">
         {/* Left Column - Location with dynamic coordinates */}
-        <div className='w-full'>
+        <div className="w-full">
           <iframe
             src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`}
-            className='w-full h-[300px] md:h-[450px]'
+            className="w-full h-[300px] md:h-[450px]"
             style={{ border: 0 }}
-            allowFullScreen=''
-            loading='lazy'
-            referrerPolicy='no-referrer-when-downgrade'
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
         </div>
 
         {/* Middle Column - Dynamic Opening Hours */}
-        <div className='ml-0 md:ml-28'>
-          <h3 className='font-medium mb-2 '>Our opening hours</h3>
-          <div className='space-y-3 md:mr-16'>
+        <div className="ml-0 md:ml-28">
+          <h3 className="font-medium mb-2 ">Our opening hours</h3>
+          <div className="space-y-3 md:mr-16">
             {workingHours.length === 0 ? (
               <div>No working hours available.</div>
             ) : (
               workingHours.map((item) => (
-                <div key={item.day_of_week} className='flex justify-between'>
+                <div key={item.day_of_week} className="flex justify-between">
                   <span>{item.day_of_week}</span>
                   <span>
                     {formatTime(item.open_time)} - {formatTime(item.close_time)}
@@ -292,27 +300,27 @@ const BankDetail = () => {
         </div>
 
         {/* Right Column - Ratings */}
-        <div className='mt-8 md:mt-0'>
-          <div className='flex justify-between mb-2'>
-            <h3 className='font-medium'>
+        <div className="mt-8 md:mt-0">
+          <div className="flex justify-between mb-2">
+            <h3 className="font-medium">
               Overall rating{" "}
-              <span className='text-gray-600'>
+              <span className="text-gray-600">
                 ({institution.reviews?.length || 0} reviews)
               </span>
             </h3>
           </div>
 
-          <div className='flex gap-1 mb-4'>{renderStars(avgRating)}</div>
-      
-          <div className='space-y-2'>
+          <div className="flex gap-1 mb-4">{renderStars(avgRating)}</div>
+
+          <div className="space-y-2">
             {[5, 4, 3, 2, 1].map((stars) => (
-              <div key={stars} className='flex items-center gap-2'>
-                <span className='w-12'>
+              <div key={stars} className="flex items-center gap-2">
+                <span className="w-12">
                   {stars} star{stars !== 1 ? "s" : ""}
                 </span>
-                <div className='flex-1 bg-gray-200 rounded-full h-2'>
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
                   <div
-                    className='bg-[#20497F] h-2 rounded-full'
+                    className="bg-[#20497F] h-2 rounded-full"
                     style={{
                       width: `${
                         totalReviews
@@ -330,33 +338,33 @@ const BankDetail = () => {
 
       {/* Dynamic Services Popup */}
       {showServicesPopup && buttonTwo && buttonTwo.sections && (
-        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4'>
-          <div className='bg-blue-50 rounded-lg p-4 sm:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative'>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-blue-50 rounded-lg p-4 sm:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
             <button
               onClick={closeServicesPopup}
-              className='absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-700 hover:text-gray-900'
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-700 hover:text-gray-900"
             >
               <IoMdClose size={24} />
             </button>
 
             {buttonTwo.sections.map((section, sectionIndex) => (
               <div key={sectionIndex}>
-                <h2 className='text-xl font-bold mb-4 sm:mb-6 pr-8'>
+                <h2 className="text-xl font-bold mb-4 sm:mb-6 pr-8">
                   {section.title}
                 </h2>
 
-                <div className='space-y-4 mb-6 sm:mb-8'>
+                <div className="space-y-4 mb-6 sm:mb-8">
                   {section.items &&
                     section.items.map((item, itemIndex) => (
                       <div
                         key={itemIndex}
-                        className='bg-white rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2'
+                        className="bg-white rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2"
                       >
-                        <div className='font-medium'>{item.name}</div>
-                        <div className='text-gray-600 text-sm sm:text-base'>
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-gray-600 text-sm sm:text-base">
                           {item.days}
                         </div>
-                        <div className='text-sm sm:text-base'>{item.time}</div>
+                        <div className="text-sm sm:text-base">{item.time}</div>
                       </div>
                     ))}
                 </div>
@@ -365,142 +373,109 @@ const BankDetail = () => {
           </div>
         </div>
       )}
-       {/* getting reviews for institution */}
-          <div className='min-h-screen'>
-            <div className='mx-auto ml-0 mt-10 px-4'>
-              <div className='flex flex-col lg:flex-row gap-8 lg:gap-16'>
-                {/* Sidebar */}
-                <div className='w-full lg:w-60 space-y-4 mt-4'>
-                  {/* Action Buttons */}
-                  <div className='space-y-3'>
-                    <button className='w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700'>
-                      Fill Our Survey
-                    </button>
-                    <button className='w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700'>
-                      Write Your Review
-                    </button>
-                  </div>
-    
-                  {/* View All Button */}
-                  <button className='w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700'>
-                    View All
-                  </button>
-    
-                  {/* Star Rating Filters */}
-                  <div className='space-y-3'>
-                    <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
-                      <div className='font-semibold text-gray-800'>5 Stars</div>
-                    </div>
-                    <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
-                      <div className='font-semibold text-gray-800'>4 Stars</div>
-                    </div>
-                    <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
-                      <div className='font-semibold text-gray-800'>3 Stars</div>
-                    </div>
-                    <div className='bg-blue-100 p-3 rounded-lg text-center shadow-md'>
-                      <div className='font-semibold text-gray-800'>2 Stars</div>
+      {/* getting reviews for institution */}
+      <div className="min-h-screen">
+        <div className="mx-auto ml-0 mt-10 px-4">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
+            {/* Sidebar */}
+            <div className="w-full lg:w-60 space-y-4 mt-4">
+              <div className="space-y-3">
+                <button className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700">
+                  Fill Our Survey
+                </button>
+                <button className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700">
+                  Write Your Review
+                </button>
+              </div>
+
+              <button
+                onClick={() => setFilter(null)}
+                className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700"
+              >
+                View All
+              </button>
+
+              <div className="space-y-3">
+                {[5, 4, 3, 2].map((star) => (
+                  <div
+                    key={star}
+                    onClick={() => setFilter(star)}
+                    className="bg-blue-100 p-3 rounded-lg text-center shadow-md cursor-pointer hover:bg-blue-200"
+                  >
+                    <div className="font-semibold text-gray-800">
+                      {star} Stars
                     </div>
                   </div>
-                </div>
-    
-                {/* Main Content */}
-                <div className='flex-1'>
-                  <h1 className='text-2xl font-semibold text-gray-800 mb-6 mt-4'>
-                    Reviews
-                  </h1>
-    
-                  <div className='space-y-6'>
-                    {/* Review 1 */}
-                    <div className='bg-white p-6 rounded-lg shadow-md'>
-                      <div className='flex flex-col sm:flex-row items-start gap-4 mb-4'>
-                        <div className='w-12 h-12 bg-red-500 rounded flex items-center justify-center text-white font-bold'>
-                          JH
-                        </div>
-                        <div className='flex-1'>
-                          <h3 className='font-semibold text-gray-900'>
-                            Java House Kigali Heights
-                          </h3>
-                          <p className='text-gray-600 text-sm'>
-                            Kigali Heights, KG 7 Ave, Kigali, Rwanda
-                          </p>
-                          <div className='flex items-center gap-1 mt-2'>
-                            <div className='flex text-yellow-400'>★ ★ ★ ★ ☆</div>
-                            <span className='text-sm text-gray-600 ml-2'>
-                              April 20th, 2025
-                            </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1">
+              <h1 className="text-2xl font-semibold text-gray-800 mb-6 mt-4">
+                Reviews
+              </h1>
+              <div className="space-y-6">
+                {filtered.map((review) => (
+                  <div
+                    key={review.id}
+                    className="bg-white p-6 rounded-lg shadow-md"
+                  >
+                    <div className="flex flex-col sm:flex-row items-start gap-4 mb-4">
+                      <div className="w-12 h-12 bg-red-500 rounded flex items-center justify-center text-white font-bold">
+                        {review.users_profile?.last_name
+                          ?.charAt(0)
+                          .toUpperCase()}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900">
+                          {review.users_profile?.first_name?.trim()}{" "}
+                          {review.users_profile?.last_name
+                            ?.charAt(0)
+                            .toUpperCase()}
+                          .
+                        </h3>
+
+                        <div className="flex items-center gap-1 mt-2">
+                          <div className="flex text-yellow-400">
+                            {"★".repeat(review.rating)}
                           </div>
+                          <span className="text-sm text-gray-600 ml-2">
+                            {new Date(review.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </span>
                         </div>
-                      </div>
-    
-                      <p className='text-gray-700 mb-4'>
-                        Great spot for brunch or casual meetings. Their cappuccino
-                        hits just right and the breakfast platter is chef's kiss.
-                        Service can be a little slow during peak hours, but the view
-                        of the Convention Centre makes up for it. Bonus: comfy seats
-                        and good Wi-Fi.
-                      </p>
-    
-                      <div className='flex flex-wrap gap-4'>
-                        <img
-                          src={java}
-                          className='w-32 h-24 object-cover rounded-lg'
-                        />
-                        <img
-                          src={room}
-                          alt='Restaurant interior'
-                          className='w-32 h-24 object-cover rounded-lg'
-                        />
                       </div>
                     </div>
-    
-                    {/* Review 2 */}
-                    <div className='bg-white p-6 rounded-lg shadow-md'>
-                      <div className='flex flex-col sm:flex-row items-start gap-4 mb-4'>
-                        <div className='w-12 h-12 bg-red-500 rounded flex items-center justify-center text-white font-bold'>
-                          JH
-                        </div>
-                        <div className='flex-1'>
-                          <h3 className='font-semibold text-gray-900'>
-                            Java House Kigali Heights
-                          </h3>
-                          <p className='text-gray-600 text-sm'>
-                            Kigali Heights, KG 7 Ave, Kigali, Rwanda
-                          </p>
-                          <div className='flex items-center gap-1 mt-2'>
-                            <div className='flex text-yellow-400'>★ ★ ★ ★ ★</div>
-                            <span className='text-sm text-gray-600 ml-2'>
-                              April 12th, 2025
-                            </span>
-                          </div>
-                        </div>
+                    <p className="text-gray-700 mb-4">{review.review}</p>
+                    {review.images?.length > 0 && (
+                      <div className="flex flex-wrap gap-4">
+                        {review.images.map((img) => (
+                          <img
+                            key={img.id}
+                            src={`${API_BASE_URL}${img.image_url}`}
+                            alt="Review Image"
+                            className="w-32 h-24 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.target.src = "/api/placeholder/400/300";
+                            }}
+                          />
+                        ))}
                       </div>
-    
-                      <p className='text-gray-700 mb-4'>
-                        Luxury meets Rwandan hospitality. The rooms are spotless,
-                        the pool is crystal-clear, and the breakfast buffet?
-                        Dangerous. You'll go in for one plate and come out with
-                        three. Staff are super attentive—you'll feel like royalty
-                        even if you just came for the Wi-Fi and iced tea.
-                      </p>
-    
-                      <div className='flex flex-wrap gap-4'>
-                        <img
-                          src={outside}
-                          alt='Hotel room'
-                          className='w-32 h-24 object-cover rounded-lg'
-                        />
-                        <img
-                          src={food}
-                          alt='Breakfast buffet'
-                          className='w-32 h-24 object-cover rounded-lg'
-                        />
-                      </div>
-                    </div>
+                    )}
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
+        </div>
+      </div>
     </div>
   );
 };
