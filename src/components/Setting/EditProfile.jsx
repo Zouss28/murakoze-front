@@ -8,8 +8,12 @@ import { ToastContainer } from "react-toastify";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { LuUserRound } from "react-icons/lu";
 import { FaPen } from "react-icons/fa";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditProfile = () => {
+
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState({
@@ -61,8 +65,6 @@ const EditProfile = () => {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-
-      
       if (error.response?.status === 401) {
         navigate("/login");
       }
@@ -89,8 +91,6 @@ const EditProfile = () => {
     formData.append("profile_image", file);
 
     const token = localStorage.getItem("token");
-   
-
     try {
       const response = await axios({
         method: "PUT",
@@ -150,47 +150,86 @@ const EditProfile = () => {
     }
   };
 
+   //Delete user data 
+   const handleDeleteAccount = async () => {
+     const confirmed = window.confirm(
+       "Are you sure you want to delete your account? "
+     );
+
+     if (!confirmed) return;
+
+     try {
+      const token = localStorage.getItem("token");
+       setDeleteLoading(true);
+       const response = await fetch(
+         "https://murakozebacked-production.up.railway.app/api/auth/delete-account",
+         {
+           method: "DELETE",
+           headers: {
+             "Content-Type": "application/json",
+             Authorization: `Bearer ${token}`,
+           },
+         }
+       );
+
+       if (response.ok) {
+         toast.success("Account deleted successfully");
+         setTimeout(() => {
+           window.location.href = "/";
+         }, 1500); 
+       } else {
+         const errorData = await response.json();
+         toast.error(errorData.message || "Failed to delete account");
+       }
+     } catch (error) {
+       console.error("Error deleting account:", error);
+       toast.error("An error occurred while deleting your account");
+     } finally {
+       setDeleteLoading(false);
+     }
+   };
+
   return (
-    <div className='flex flex-col md:flex-row w-full max-w-6xl mx-auto bg-white mt-6 md:mt-16 px-4 md:px-8'>
+    <div className="flex flex-col md:flex-row w-full max-w-6xl mx-auto bg-white mt-6 md:mt-16 px-4 md:px-8">
       {/* Left Sidebar */}
-      <div className='w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200'>
-        <div className='flex flex-col items-center p-8'>
+      <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200">
+        <div className="flex flex-col items-center p-8">
           {/* Profile Image */}
-          <div className='w-40 h-40 rounded-full bg-blue-100 flex items-center justify-center mb-4 overflow-hidden'>
+          <div className="w-40 h-40 rounded-full bg-blue-100 flex items-center justify-center mb-4 overflow-hidden">
             {profileImage ? (
               <img
                 src={profileImage}
-                alt='Profile'
-                className='w-full h-full object-cover'
+                alt="Profile"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <div className='text-blue-800'>
-                <LuUserRound className='text-5xl' />
+              <div className="text-blue-800">
+                <LuUserRound className="text-5xl" />
               </div>
             )}
           </div>
 
           {/* Name */}
-          <h2 className='text-lg font-medium'>
+          <h2 className="text-lg font-medium">
             {userData.first_name} {userData.last_name}
           </h2>
 
-          <div className='flex items-center space-x-6 mb-8 mt-4'>
+          <div className="flex items-center space-x-6 mb-8 mt-4">
             <Link
-              to='/profile'
-              className='flex items-center text-sm text-gray-800 cursor-pointer'
+              to="/profile"
+              className="flex items-center text-sm text-gray-800 cursor-pointer"
             >
               <FaPen />
-              <span className='ml-2'>Edit Profile</span>
+              <span className="ml-2">Edit Profile</span>
             </Link>
 
-            <label className='flex items-center text-sm text-gray-800 cursor-pointer'>
+            <label className="flex items-center text-sm text-gray-800 cursor-pointer">
               <IoIosAddCircleOutline />
               Add Photo
               <input
-                type='file'
-                className='hidden'
-                accept='image/*'
+                type="file"
+                className="hidden"
+                accept="image/*"
                 onChange={handleImageUpload}
               />
             </label>
@@ -198,17 +237,17 @@ const EditProfile = () => {
         </div>
 
         {/* Menu Items */}
-        <div className='px-4 pb-6 ml-4'>
-          <Link to='/overview'>
-            <div className='flex items-center py-3 px-4 text-gray-700'>
-              <User size={18} className='mr-3' />
+        <div className="px-4 pb-6 ml-4">
+          <Link to="/overview">
+            <div className="flex items-center py-3 px-4 text-gray-700">
+              <User size={18} className="mr-3" />
               <span>Profile Overview</span>
             </div>
           </Link>
 
-          <Link to='/view'>
-            <div className='flex items-center py-3 px-4 text-gray-700'>
-              <MessageSquare size={18} className='mr-3' />
+          <Link to="/view">
+            <div className="flex items-center py-3 px-4 text-gray-700">
+              <MessageSquare size={18} className="mr-3" />
               <span>Reviews</span>
             </div>
           </Link>
@@ -216,24 +255,24 @@ const EditProfile = () => {
       </div>
 
       {/* Main Content */}
-      <div className='flex-1 p-4 md:p-8'>
-        <form onSubmit={handleSubmit} className='max-w-3xl mx-auto'>
-          <h1 className='text-2xl font-semibold mb-2'>Edit Profile</h1>
-          <p className='text-gray-500 mb-8'>
+      <div className="flex-1 p-4 md:p-8">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          <h1 className="text-2xl font-semibold mb-2">Edit Profile</h1>
+          <p className="text-gray-500 mb-8">
             This information will be displayed publicly be careful what you
             share
           </p>
 
-          <h2 className='text-gray-700 mb-4'>Personal Information</h2>
+          <h2 className="text-gray-700 mb-4">Personal Information</h2>
 
           {/* Form Grid */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <input
-                type='text'
-                name='first_name'
-                placeholder='Firstname'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                type="text"
+                name="first_name"
+                placeholder="Firstname"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.first_name}
                 onChange={handleChange}
                 required
@@ -241,19 +280,19 @@ const EditProfile = () => {
             </div>
             <div>
               <input
-                type='text'
-                placeholder='Active since'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-100'
+                type="text"
+                placeholder="Active since"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-100"
                 value={userData.added_at}
                 readOnly
               />
             </div>
             <div>
               <input
-                type='text'
-                name='last_name'
-                placeholder='Lastname'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                type="text"
+                name="last_name"
+                placeholder="Lastname"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.last_name}
                 onChange={handleChange}
                 required
@@ -261,35 +300,35 @@ const EditProfile = () => {
             </div>
             <div>
               <input
-                type='text'
-                name='phone_number'
-                placeholder='Phone Number'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                type="text"
+                name="phone_number"
+                placeholder="Phone Number"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.phone_number}
                 onChange={handleChange}
               />
             </div>
             <div>
               <select
-                name='gender'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                name="gender"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.gender}
                 onChange={handleChange}
                 required
               >
-                <option value=''>Select Gender</option>
-                <option value='Male'>Male</option>
-                <option value='Female'>Female</option>
-                <option value='Other'>Other</option>
-                <option value='Prefer not to say'>Prefer not to say</option>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="Prefer not to say">Prefer not to say</option>
               </select>
             </div>
             <div>
               <input
-                type='email'
-                name='email'
-                placeholder='Email'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                type="email"
+                name="email"
+                placeholder="Email"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.email}
                 onChange={handleChange}
                 required
@@ -297,24 +336,24 @@ const EditProfile = () => {
             </div>
             <div>
               <select
-                name='age_group'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                name="age_group"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.age_group}
                 onChange={handleChange}
               >
-                <option value=''>Select Age Group</option>
-                <option value='18-24'>18-24</option>
-                <option value='25-34'>25-34</option>
-                <option value='35-44'>35-44</option>
-                <option value='45-54'>45-54</option>
+                <option value="">Select Age Group</option>
+                <option value="18-24">18-24</option>
+                <option value="25-34">25-34</option>
+                <option value="35-44">35-44</option>
+                <option value="45-54">45-54</option>
               </select>
             </div>
             <div>
               <input
-                type='text'
-                name='address'
-                placeholder='Location'
-                className='w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                type="text"
+                name="address"
+                placeholder="Location"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={userData.address}
                 onChange={handleChange}
               />
@@ -322,22 +361,41 @@ const EditProfile = () => {
           </div>
 
           {/* Buttons */}
-          <div className='flex justify-end mt-10 gap-4'>
-            <Link to='/profile'>
+          <div className="flex justify-between items-start mt-10 gap-4">
+            {/* Delete Account Section - Left Side */}
+            <div className="flex flex-col gap-2">
               <button
-                type='button'
-                className='px-6 py-2 border border-gray-300 rounded-md text-gray-600'
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+                className="px-6 py-2 bg-red-500 border border-red-500 rounded-md text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Cancel
+                {deleteLoading ? "Deleting..." : "Delete Account"}
               </button>
-            </Link>
-            <button
-              type='submit'
-              className='px-6 py-2 bg-[#20497F] text-white rounded-md'
-              disabled={loading}
-            >
-              {loading ? "Saving..." : "Save"}
-            </button>
+              <span className="text-sm text-gray-600 max-w-xs">
+                This action cannot be undone. This will permanently delete your
+                account and all associated data.
+              </span>
+            </div>
+
+            {/* Cancel and Save Buttons - Right Side */}
+            <div className="flex gap-4">
+              <Link to="/profile">
+                <button
+                  type="button"
+                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </Link>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-[#20497F] text-white rounded-md hover:bg-[#1a3a6b] transition-colors"
+                disabled={loading}
+              >
+                {loading ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
         </form>
         <ToastContainer />

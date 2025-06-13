@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, data } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Star, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { IoMdClose } from "react-icons/io";
+
 
 const BankDetail = () => {
   const { id } = useParams();
@@ -380,12 +381,17 @@ const BankDetail = () => {
             {/* Sidebar */}
             <div className="w-full lg:w-60 space-y-4 mt-4">
               <div className="space-y-3">
-                <button className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700">
-                  Fill Our Survey
-                </button>
-                <button className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700">
-                  Write Your Review
-                </button>
+                <Link to={`/service`} state={{ institution }}>
+                  <button className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700">
+                    Fill Our Survey
+                  </button>
+                </Link>
+
+                <Link to={`/postreview/${institution.id}`} state={institution}>
+                  <button className="w-full bg-[#20497F] text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 mt-4">
+                    Write Your Review
+                  </button>
+                </Link>
               </div>
 
               <button
